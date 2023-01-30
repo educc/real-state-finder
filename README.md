@@ -1,11 +1,10 @@
+# What it is
+A really simple scraping tool to extract data from a web page that contains real state data.
 
-Find data from:
-
-# NexoInmobiliario
-View source from this page and look for these variable 'search_data'.
+# HOW TO RUN
+- Step 1: View source from this page and look for these variable 'search_data'.
 
 https://nexoinmobiliario.pe/busqueda/venta-de-departamentos-en-lima-lima-1501
 
-
-# HOW TO RUN
-- ```scala-cli run .`
+- Step 2: Paste as json in the "data/search_data.json" file.
+- Step 3: run in the console ```scala-cli run .`
