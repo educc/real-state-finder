@@ -1,6 +1,6 @@
 import io.circe.parser.parse
 import io.circe.{Decoder, HCursor}
-
+import scala.util.Try
 import java.math.MathContext
 import java.nio.file.{Files, Paths}
 
@@ -28,7 +28,10 @@ object NexoInmobiliariaFinder {
           .filter(_.length>0)
         val exchangeRate = if (currency == "S/.") 1 else 4
         val price = exchangeRate * minPrice
-        val priceBy = (price/minArea).setScale(0, BigDecimal.RoundingMode.UP)
+        val priceBy = Try {
+          (price/minArea).setScale(0, BigDecimal.RoundingMode.UP)
+        }.getOrElse(BigDecimal(0))
+        
         val cleanAddress = address.replace(",", " ")
         ApartmentItem(district, cleanAddress, priceBy,minArea, maxArea, url, contact)
       }
