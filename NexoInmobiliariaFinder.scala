@@ -1,6 +1,3 @@
-package app.impl
-
-import app.ApartmentItem
 import io.circe.parser.parse
 import io.circe.{Decoder, HCursor}
 
@@ -22,6 +19,7 @@ object NexoInmobiliariaFinder {
         currency <- c.downField("coin").as[String]
         minPrice <- c.downField("min_price").as[BigDecimal]
         minArea <- c.downField("area_min").as[BigDecimal]
+        maxArea <- c.downField("area_max").as[BigDecimal]
         url <- c.downField("url").as[String]
       } yield {
         val contact = Seq(phone1, phone2, phone3)
@@ -32,7 +30,7 @@ object NexoInmobiliariaFinder {
         val price = exchangeRate * minPrice
         val priceBy = (price/minArea).setScale(0, BigDecimal.RoundingMode.UP)
         val cleanAddress = address.replace(",", " ")
-        ApartmentItem(district, cleanAddress, priceBy, url, contact)
+        ApartmentItem(district, cleanAddress, priceBy,minArea, maxArea, url, contact)
       }
   }
 
