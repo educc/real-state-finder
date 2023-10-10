@@ -7,3 +7,5 @@ target
 .scala-build
 .metals
 .DS_Store
+*.csv
+*.xlsx
