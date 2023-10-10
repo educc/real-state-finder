@@ -5,7 +5,8 @@ import java.math.MathContext
 
 object ApartmentItem {
 
-    implicit val apartmentItemDecoder: Decoder[ApartmentItem] = new Decoder[ApartmentItem] {
+  implicit val apartmentItemDecoder: Decoder[ApartmentItem] =
+    new Decoder[ApartmentItem] {
       final def apply(c: HCursor): Decoder.Result[ApartmentItem] =
         for {
           district <- c.downField("distrito").as[String]
@@ -17,47 +18,67 @@ object ApartmentItem {
           minPrice <- c.downField("min_price").as[BigDecimal]
           minArea <- c.downField("area_min").as[BigDecimal]
           maxArea <- c.downField("area_max").as[BigDecimal]
-          url <- c.downField("url").as[String]
+          slug <- c.downField("slug").as[String]
+          projectPhase <- c.downField("project_phase").as[String]
         } yield {
           val contact = Seq(phone1, phone2, phone3)
             .map(_.trim)
-            .map(_.replace(",","-"))
-            .filter(_.length>0)
+            .map(_.replace(",", "-"))
+            .filter(_.length > 0)
           val exchangeRate = if (currency == "S/.") 1 else 4
           val price = exchangeRate * minPrice
           val priceBy = Try {
-            (price/minArea).setScale(0, BigDecimal.RoundingMode.UP)
+            (price / minArea).setScale(0, BigDecimal.RoundingMode.UP)
           }.getOrElse(BigDecimal(0))
-          
+
           val cleanAddress = address.replace(",", " ")
-          ApartmentItem(district, cleanAddress, priceBy,minArea, maxArea, url, contact)
+          val url = s"https://google.com/search?q=$slug"
+          val phase = projectPhase match {
+            case "1"       => "En planos"
+            case "2"       => "Construcción"
+            case "3"       => "Entrega inmediata"
+            case _: String => projectPhase
+          }
+          ApartmentItem(
+            district,
+            cleanAddress,
+            priceBy,
+            minArea,
+            maxArea,
+            url,
+            phase,
+            contact
+          )
         }
-  }
+    }
 }
 
-case class  ApartmentItem(
-                         district: String,
-                         address: String,
-                         priceByM2: BigDecimal,
-                         areaMin: BigDecimal,
-                         areaMax: BigDecimal,
-                         url: String,
-                         contact: Seq[String] = Seq.empty
-                         ) {
-    def toCsv: String = {
-      Seq(
-        district, 
-        address, 
-        priceByM2, 
-        areaMin, 
-        areaMax, 
-        contact, 
-        url
-        )
-          .map {
-              case a: Seq[_] => a.mkString("-")
-              case b => b.toString
-          }.mkString(",")
+case class ApartmentItem(
+    district: String,
+    address: String,
+    priceByM2: BigDecimal,
+    areaMin: BigDecimal,
+    areaMax: BigDecimal,
+    url: String,
+    phase: String,
+    contact: Seq[String] = Seq.empty
+) {
+  def toCsv: String = {
+    Seq(
+      district,
+      address,
+      priceByM2,
+      areaMin,
+      areaMax,
+      phase,
+      contact,
+      url
+    )
+      .map {
+        case a: Seq[_] => a.mkString("-")
+        case b         => b.toString
+      }
+      .mkString(",")
 
-    }
+  }
 }
