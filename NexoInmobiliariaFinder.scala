@@ -5,14 +5,20 @@ import java.nio.charset.StandardCharsets
 
 object NexoInmobiliariaFinder {
 
-  def findFromUrl(url: String) : Seq[ApartmentItem] = {
+  def findFromUrl(url: String): Seq[ApartmentItem] = {
     val jsonStr = findJsonFromUrl(url)
     parse(jsonStr)
       .flatMap(_.as[Seq[ApartmentItem]])
       .getOrElse(Seq.empty)
   }
 
-  def findJsonFromUrl(url: String) : String = {
+  def findFromJson(filename: String): Seq[ApartmentItem] = {
+    parse(Source.fromFile(filename).mkString)
+      .flatMap(_.as[Seq[ApartmentItem]])
+      .getOrElse(Seq.empty)
+  }
+
+  def findJsonFromUrl(url: String): String = {
     val html = download(url)
     val json = findJson(html)
     json
@@ -28,6 +34,6 @@ object NexoInmobiliariaFinder {
     html.substring(start + 12, end + 1)
   }
 
-  //private def readFile = Files.readString(Paths.get(source))
+  // private def readFile = Files.readString(Paths.get(source))
 
 }

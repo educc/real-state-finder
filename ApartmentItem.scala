@@ -39,12 +39,17 @@ object ApartmentItem {
             case "3"       => "Entrega inmediata"
             case _: String => projectPhase
           }
+          val roomMin = 0
+          val roomMax = 0
+
           ApartmentItem(
             district,
             cleanAddress,
             priceBy,
             minArea,
             maxArea,
+            roomMin,
+            roomMax,
             url,
             phase,
             contact
@@ -59,6 +64,8 @@ case class ApartmentItem(
     priceByM2: BigDecimal,
     areaMin: BigDecimal,
     areaMax: BigDecimal,
+    roomMin: Int,
+    roomMax: Int,
     url: String,
     phase: String,
     contact: Seq[String] = Seq.empty
@@ -70,6 +77,8 @@ case class ApartmentItem(
       priceByM2,
       areaMin,
       areaMax,
+      roomMin,
+      roomMax,
       phase,
       contact,
       url

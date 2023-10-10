@@ -8,8 +8,9 @@ import scopt.OParser
 
 object Main {
 
-  case class Config (
-    url: String = "https://nexoinmobiliario.pe/busqueda/venta-de-departamentos-en-lima-lima-1501"
+  case class Config(
+      url: String =
+        "https://nexoinmobiliario.pe/busqueda/venta-de-departamentos-en-lima-lima-1501"
   )
 
   val argParser = {
@@ -18,20 +19,29 @@ object Main {
       import builder._
       OParser.sequence(
         programName("real-state-finder"),
-        head("real-state-finder", "1.0"), 
-        opt[String]('u', "url")
+        head("real-state-finder", "1.0"),
+        opt[String]('u', "url or file")
           .action((x, c) => c.copy(url = x))
-          .text("URL to search for apartments"),
+          .text("URL to search for apartments")
       )
     }
   }
 
-
   def main(args: Array[String]) = {
     OParser.parse(argParser, args, Config()) match {
       case Some(config) =>
-        println("distrito, direccion, precioM2, areaMin, areaMax, contact, url")
-        NexoInmobiliariaFinder.findFromUrl(config.url)
+        println(
+          "distrito, direccion, precioM2, areaMin, areaMax, roomMin, roomMax, phase, contact, url"
+        )
+        val isUrl = config.url.startsWith("http")
+
+        val data = if (isUrl) {
+          NexoInmobiliariaFinder.findFromUrl(config.url)
+        } else {
+          NexoInmobiliariaFinder.findFromJson(config.url)
+        }
+
+        data
           .map(_.toCsv)
           .foreach(println)
       case _ =>
