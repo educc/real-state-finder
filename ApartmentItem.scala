@@ -15,45 +15,27 @@ object ApartmentItem {
           phone2 <- c.downField("project_cell_phone").as[String]
           phone3 <- c.downField("project_whatsapp").as[String]
           currency <- c.downField("coin").as[String]
-          minPrice <- c.downField("min_price").as[BigDecimal]
+          minPrice <- c.downField("val_price1").as[BigDecimal]
+          maxPrice <- c.downField("val_price2").as[BigDecimal]
           minArea <- c.downField("area_min").as[BigDecimal]
           maxArea <- c.downField("area_max").as[BigDecimal]
           slug <- c.downField("slug").as[String]
           projectPhase <- c.downField("project_phase").as[String]
         } yield {
-          val contact = Seq(phone1, phone2, phone3)
-            .map(_.trim)
-            .map(_.replace(",", "-"))
-            .filter(_.length > 0)
-          val exchangeRate = if (currency == "S/.") 1 else 4
-          val price = exchangeRate * minPrice
-          val priceBy = Try {
-            (price / minArea).setScale(0, BigDecimal.RoundingMode.UP)
-          }.getOrElse(BigDecimal(0))
-
-          val cleanAddress = address.replace(",", " ")
-          val url = s"https://google.com/search?q=$slug"
-          val phase = projectPhase match {
-            case "1"       => "En planos"
-            case "2"       => "Construcción"
-            case "3"       => "Entrega inmediata"
-            case _: String => projectPhase
-          }
-          val roomMin = 0
-          val roomMax = 0
-
-          ApartmentItem(
-            district,
-            cleanAddress,
-            priceBy,
-            minArea,
-            maxArea,
-            roomMin,
-            roomMax,
-            url,
-            phase,
-            contact
-          )
+          ApartmentItemAdapter(
+            district = district,
+            address = address,
+            phone1 = phone1,
+            phone2 = phone2,
+            phone3 = phone3,
+            currency = currency,
+            minPrice = minPrice,
+            maxPrice = maxPrice,
+            minArea = minArea,
+            maxArea = maxArea,
+            slug = slug,
+            projectPhase = projectPhase
+          ).convert()
         }
     }
 }
@@ -89,5 +71,72 @@ case class ApartmentItem(
       }
       .mkString(",")
 
+  }
+}
+
+private case class ApartmentItemAdapter(
+    district: String,
+    address: String,
+    phone1: String,
+    phone2: String,
+    phone3: String,
+    currency: String,
+    minPrice: BigDecimal,
+    maxPrice: BigDecimal,
+    minArea: BigDecimal,
+    maxArea: BigDecimal,
+    slug: String,
+    projectPhase: String
+) {
+
+  private val exchangeRate = if (currency == "S/.") 1 else 4
+  private val minPriceSoles = exchangeRate * minPrice
+  private val maxPriceSoles = exchangeRate * maxPrice
+
+  private def mkDistrict: String = district
+
+  private def mkAddress: String = address.replace(",", " ")
+
+  private def mkPriceBySquare: BigDecimal = {
+    Try {
+      val squarePriceForMinArea = minPriceSoles / minArea
+      val squarePriceForMaxArea = maxPriceSoles / maxArea
+      val minSquarePrice =
+        if (squarePriceForMaxArea > squarePriceForMinArea) squarePriceForMinArea
+        else squarePriceForMaxArea
+
+      minSquarePrice.setScale(0, BigDecimal.RoundingMode.UP)
+    }.getOrElse(BigDecimal(0))
+  }
+
+  private def mkUrl: String = s"https://google.com/search?q=$slug"
+
+  private def mkPhase: String = projectPhase match {
+    case "1"       => "En planos"
+    case "2"       => "Construcción"
+    case "3"       => "Entrega inmediata"
+    case _: String => projectPhase
+  }
+
+  private def mkContact: Seq[String] = {
+    Seq(phone1, phone2, phone3)
+      .map(_.trim)
+      .map(_.replace(",", "-"))
+      .filter(_.length > 0)
+  }
+
+  def convert(): ApartmentItem = {
+    ApartmentItem(
+      mkDistrict,
+      mkAddress,
+      mkPriceBySquare,
+      minArea,
+      maxArea,
+      0,
+      0,
+      mkUrl,
+      mkPhase,
+      mkContact
+    )
   }
 }
