@@ -15,64 +15,95 @@ from utils import to_number
 
 
 def parse_apartments(html_content: str) -> list[Apartment]:
-    soup = BeautifulSoup(html_content, 'html.parser')
+    try:
+        soup = BeautifulSoup(html_content, 'html.parser')
 
-    # To find elements by CSS selector
-    elements = soup.select('.Project-available-model .bottom-info')
+        # To find elements by CSS selector
+        elements = soup.select('.Project-available-model .bottom-info')
 
-    result: list[Apartment] = []
-    for element in elements:
-        bedroom = int(element.select(".bedroom")[0].text.strip())
-        area_str = element.select(".area")[0].text.strip()
-        price_str = element.select(".price")[0].text.strip()
+        result: list[Apartment] = []
+        for element in elements:
+            bedroom = int(element.select(".bedroom")[0].text.strip())
+            area_str = element.select(".area")[0].text.strip()
+            price_str = element.select(".price")[0].text.strip()
 
-        price = to_number(price_str)
-        if "$" in price_str:
-            price = price * config.exchange_rate_pen_usd
-            price = round(price, 2)
+            price = to_number(price_str)
+            if "$" in price_str:
+                price = price * config.exchange_rate_pen_usd
+                price = round(price, 2)
 
-        result.append(Apartment(
-            name="",
-            address="",
-            district="",
-            construction_status="",
-            price_soles=price,
-            bedrooms=bedroom,
-            bathrooms=0,
-            area_m2=to_number(area_str),
-            url=""
-        ))
+            result.append(Apartment(
+                name="",
+                address="",
+                district="",
+                construction_status="",
+                price_soles=price,
+                bedrooms=bedroom,
+                bathrooms=0,
+                area_m2=to_number(area_str),
+                url=""
+            ))
 
-    logging.info("Found %d apartments", len(result))
-    return result
+        logging.info("Found %d apartments", len(result))
+        return result
+    except Exception as e:
+        logging.error("Error parsing apartments")
+        logging.error(e)
+        return []
+
+
+def search_and_get_html_v2(slug: str) -> str:
+    try:
+        driver = webdriver.Chrome()
+
+        url: str = f"https://nexoinmobiliario.pe/proyecto/venta-de-departamento-{slug}"
+
+        logging.info("Searching for: %s", url)
+
+        driver.get(url)
+
+        time.sleep(2)
+
+        html_content = driver.page_source
+        driver.quit()
+        return html_content
+    except Exception as e:
+        logging.error("Error searching for %s", slug)
+        logging.error(e)
+        return "<html></html>"
 
 
 def search_and_get_html(slug: str) -> str:
     # Set up the WebDriver to use Chrome
-    driver = webdriver.Chrome()
+    try:
+        driver = webdriver.Chrome()
 
-    search_text: str = f"{slug} site: nexoinmobiliario.pe"
-    driver.get("https://www.google.com/search?q=" + search_text)
+        search_text: str = f"{slug} site: nexoinmobiliario.pe"
+        driver.get("https://www.google.com/search?q=" + search_text)
 
-    # Wait for the page to load
-    time.sleep(2)
+        # Wait for the page to load
+        time.sleep(2)
 
-    logging.info("Searching for: %s", search_text)
+        logging.info("Searching for: %s", search_text)
 
-    # Click on the first search result
-    results = driver.find_elements(By.TAG_NAME, 'a')
-    for it in results:
-        link = it.get_attribute('href')
-        if link is not None and slug in link and "https://nexoinmobiliario.pe" in link:
-            it.click()
-            break
-    # end-for
+        # Click on the first search result
+        results = driver.find_elements(By.TAG_NAME, 'a')
+        for it in results:
+            link = it.get_attribute('href')
+            if link is not None and slug in link and "https://nexoinmobiliario.pe" in link:
+                it.click()
+                break
+        # end-for
 
-    time.sleep(2)
+        time.sleep(2)
 
-    html_content = driver.page_source
-    driver.quit()
-    return html_content
+        html_content = driver.page_source
+        driver.quit()
+        return html_content
+    except Exception as e:
+        logging.error("Error searching for %s", slug)
+        logging.error(e)
+        return "<html></html>"
 
 
 @dataclass
@@ -147,22 +178,22 @@ class NexoFinder(AparmentFinder):
         raw_data: list[ProjectInfo] = self.__get_raw_data()
 
         items: list[Apartment] = []
-        for project in raw_data:
+        total = len(raw_data)
+        for i, project in enumerate(raw_data):
+            logging.info("Processing project %d/%d: %s", i + 1, total, project.slug)
             apartments = self.__find_by_project(project)
             for apartment in apartments:
                 apartment.name = project.name
                 apartment.address = project.direccion
                 apartment.district = project.distrito
                 apartment.url = project.url
+                apartment.construction_status = project.project_phase
             items.extend(apartments)
-            break
-        items: list[Apartment] = self.__find_by_project(raw_data[0])
 
         return items
 
     def __find_by_project(self, project: ProjectInfo) -> list[Apartment]:
-        logging.info("Searching for project: %s", project.slug)
-        html_content: str = search_and_get_html(project.slug)
+        html_content: str = search_and_get_html_v2(project.slug)
         return parse_apartments(html_content)
 
     def __get_raw_data(self) -> list[ProjectInfo]:
