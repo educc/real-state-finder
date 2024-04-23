@@ -5,12 +5,46 @@ import time
 from dataclasses import dataclass, field
 
 import requests
+from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 
 from apartment_finder import Apartment, AparmentFinder
+from app_config import config
+from utils import to_number
 
-logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO)
+
+def parse_apartments(html_content: str) -> list[Apartment]:
+    soup = BeautifulSoup(html_content, 'html.parser')
+
+    # To find elements by CSS selector
+    elements = soup.select('.Project-available-model .bottom-info')
+
+    result: list[Apartment] = []
+    for element in elements:
+        bedroom = int(element.select(".bedroom")[0].text.strip())
+        area_str = element.select(".area")[0].text.strip()
+        price_str = element.select(".price")[0].text.strip()
+
+        price = to_number(price_str)
+        if "$" in price_str:
+            price = price * config.exchange_rate_pen_usd
+            price = round(price, 2)
+
+        result.append(Apartment(
+            name="",
+            address="",
+            district="",
+            construction_status="",
+            price_soles=price,
+            bedrooms=bedroom,
+            bathrooms=0,
+            area_m2=to_number(area_str),
+            url=""
+        ))
+
+    logging.info("Found %d apartments", len(result))
+    return result
 
 
 def search_and_get_html(slug: str) -> str:
@@ -29,7 +63,6 @@ def search_and_get_html(slug: str) -> str:
     results = driver.find_elements(By.TAG_NAME, 'a')
     for it in results:
         link = it.get_attribute('href')
-        print(link)
         if link is not None and slug in link and "https://nexoinmobiliario.pe" in link:
             it.click()
             break
@@ -113,17 +146,24 @@ class NexoFinder(AparmentFinder):
     def get_all(self) -> list[Apartment]:
         raw_data: list[ProjectInfo] = self.__get_raw_data()
 
+        items: list[Apartment] = []
+        for project in raw_data:
+            apartments = self.__find_by_project(project)
+            for apartment in apartments:
+                apartment.name = project.name
+                apartment.address = project.direccion
+                apartment.district = project.distrito
+                apartment.url = project.url
+            items.extend(apartments)
+            break
         items: list[Apartment] = self.__find_by_project(raw_data[0])
 
         return items
 
     def __find_by_project(self, project: ProjectInfo) -> list[Apartment]:
-        print(project)
-
+        logging.info("Searching for project: %s", project.slug)
         html_content: str = search_and_get_html(project.slug)
-        print(html_content)
-
-        return []
+        return parse_apartments(html_content)
 
     def __get_raw_data(self) -> list[ProjectInfo]:
         html_text = requests.get(self.url).text
@@ -136,3 +176,8 @@ class NexoFinder(AparmentFinder):
             list_dict = json.loads(match.group(1))
             return [ProjectInfo(**item) for item in list_dict]
         return []
+
+
+if __name__ == "__main__":
+    with open("example.html", "r") as file:
+        parse_apartments(file.read())
