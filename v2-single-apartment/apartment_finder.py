@@ -1,7 +1,4 @@
-from dataclasses import dataclass, field
-import requests
-import re
-import json
+from dataclasses import dataclass
 
 
 @dataclass
@@ -21,5 +18,3 @@ class AparmentFinder:
 
     def get_all(self) -> list[Apartment]:
         return []
-
-
