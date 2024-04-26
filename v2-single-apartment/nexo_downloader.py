@@ -41,7 +41,7 @@ def _get_delivery_date(soup: BeautifulSoup) -> str:
     year = int(parts[idx_entrega + 4])
 
     month_number = month_number_from_es_name(month_name_es)
-    return "%d-%2d-%2d" % (year, month_number, day)
+    return "%d-%02d-%02d" % (year, month_number, day)
 
 
 # end-def
