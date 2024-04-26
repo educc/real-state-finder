@@ -4,7 +4,7 @@ import re
 
 import requests
 
-from apartment_finder import Apartment, AparmentFinder
+from apartment_finder import Apartment, AparmentFinder, CONSTRUCTION_STATUS
 from nexo_downloader import parse_apartments, search_and_get_html_requests
 from nexo_models import ProjectInfo
 
@@ -12,6 +12,16 @@ from nexo_models import ProjectInfo
 def _find_by_project(url: str) -> list[Apartment]:
     html_content: str = search_and_get_html_requests(url)
     return parse_apartments(html_content)
+
+
+def _get_googlemap_url(lat: str, long: str) -> str:
+    return f"https://www.google.com/maps/search/?api=1&query={lat},{long}"
+
+
+def _get_phones(project: ProjectInfo) -> str:
+    phone_list = [project.project_cell_phone, project.project_phone, project.project_whatsapp]
+    phones = [i for i in phone_list if len(i) > 0]
+    return ",".join(phones)
 
 
 class NexoFinder(AparmentFinder):
@@ -32,12 +42,17 @@ class NexoFinder(AparmentFinder):
 
             url: str = f"https://nexoinmobiliario.pe/proyecto/venta-de-departamento-{project.slug}"
             apartments = _find_by_project(url)
+
             for apartment in apartments:
                 apartment.name = project.name
                 apartment.address = project.direccion
                 apartment.district = project.distrito
                 apartment.url = url
-                apartment.construction_status = project.project_phase
+                apartment.construction_status = CONSTRUCTION_STATUS[project.project_phase]
+                apartment.url_location = _get_googlemap_url(project.coord_lat, project.long)
+                apartment.builder = project.builder_name
+                apartment.bank = project.finance_bank
+                apartment.phones = _get_phones(project)
             items.extend(apartments)
         # end for
 

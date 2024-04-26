@@ -1,5 +1,11 @@
 from dataclasses import dataclass
 
+CONSTRUCTION_STATUS = {
+    "1": "Planos",
+    "2": "En construcción",
+    "3": "Entregado"
+}
+
 
 @dataclass
 class Apartment:
@@ -12,6 +18,10 @@ class Apartment:
     bathrooms: int
     area_m2: float
     url: str
+    builder: str = ""
+    bank: str = ""
+    phones: str = ""
+    url_location: str = ""
 
 
 class AparmentFinder:
