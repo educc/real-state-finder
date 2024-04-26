@@ -9,7 +9,7 @@ from slugify import slugify
 
 from apartment_finder import Apartment
 from app_config import config
-from utils import to_number
+from utils import to_number, month_number_from_es_name
 
 CUR_DIR = os.path.dirname(__file__)
 NEXO_CACHE_DIR = os.path.join(CUR_DIR, "nexo_cache")
@@ -17,11 +17,41 @@ NEXO_CACHE_DIR = os.path.join(CUR_DIR, "nexo_cache")
 os.makedirs(NEXO_CACHE_DIR, exist_ok=True)
 
 
+def _get_delivery_date(soup: BeautifulSoup) -> str:
+    el_table = soup.select('.bx-data-project')
+    el_slug_text = slugify(el_table[0].text)
+    parts = el_slug_text.split("-")
+
+    # find "entrega" text
+    idx_entrega = -1
+    for i, part in enumerate(parts):
+        if "entrega" in part:
+            idx_entrega = i
+            break
+    # end-for
+
+    if idx_entrega == -1 or len(parts) < (idx_entrega + 4):
+        return ""
+
+    if parts[idx_entrega + 1] == "inmediata":
+        return "inmediata"
+
+    day = int(parts[idx_entrega + 1])
+    month_name_es = parts[idx_entrega + 3]
+    year = int(parts[idx_entrega + 4])
+
+    month_number = month_number_from_es_name(month_name_es)
+    return "%d-%2d-%2d" % (year, month_number, day)
+
+
+# end-def
+
+
 def parse_apartments(html_content: str) -> list[Apartment]:
     try:
         soup = BeautifulSoup(html_content, 'html.parser')
+        delivery_date = _get_delivery_date(soup)
 
-        # To find elements by CSS selector
         elements = soup.select('.Project-available-model .bottom-info')
 
         result: list[Apartment] = []
@@ -44,7 +74,8 @@ def parse_apartments(html_content: str) -> list[Apartment]:
                 bedrooms=bedroom,
                 bathrooms=0,
                 area_m2=to_number(area_str),
-                url=""
+                url="",
+                delivery_date=delivery_date,
             ))
 
         logging.info("Found %d apartments", len(result))

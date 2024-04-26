@@ -13,6 +13,7 @@ class Apartment:
     address: str
     district: str
     construction_status: str
+    delivery_date: str
     price_soles: float
     bedrooms: int
     bathrooms: int

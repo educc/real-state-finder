@@ -16,6 +16,8 @@ def write_excel(data: list, file_name: str = 'output.xlsx'):
 def main():
     finder: AparmentFinder = NexoFinder()
     data = finder.get_all()
+    # sorting data by price_soles column asc
+    data = sorted(data, key=lambda x: x.price_soles)
     write_excel(data)
 
 
