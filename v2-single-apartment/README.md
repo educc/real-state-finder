@@ -16,3 +16,14 @@ again.
 python main.py
 
 ```
+
+## nexo_web
+
+This program run a website to show the data downloaded from nexoinmobiliario, it uses the cache data from the
+```nexo_cache``` folder.
+
+```bash
+
+python nexo_web.py
+
+```
