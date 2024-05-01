@@ -71,39 +71,41 @@ class AppWeb():
         self.app = dash.Dash(__name__)
 
     def run(self):
+        unique_districts = sorted(set(apt.district for apt in self.all_apartments))
+        phases = sorted(set(apt.construction_status for apt in self.all_apartments))
+
         @self.app.callback(
             Output('map', 'children'),
             [
                 Input('district-dropdown', 'value'),
+                Input('construction-status-dropdown', 'value'),
                 Input('min-price-input', 'value'),
                 Input('max-price-input', 'value'),
                 Input('min-bedroom-input', 'value'),
-                Input('max-bedroom-input', 'value')
+                Input('max-bedroom-input', 'value'),
+                Input('common-area-input', 'value')
             ]
         )
-        def update_map(selected_districts, min_price, max_price, min_bedroom, max_bedroom):
-            if not min_price:
-                min_price = 0
-            if not max_price:
-                max_price = 5_000_000
-            if not min_bedroom:
-                min_bedroom = 0
-            if not max_bedroom:
-                max_bedroom = 10
+        def update_map(selected_districts, selected_phases, min_price, max_price, min_bedroom, max_bedroom,
+                       common_area):
+            min_price = min_price | 0
+            max_price = max_price | 0
+            min_bedroom = min_bedroom | 0
+            max_bedroom = max_bedroom | 0
+            selected_districts = selected_districts or unique_districts
+            selected_phases = selected_phases or phases
+            common_area = common_area | 0
 
             aux = filter(lambda apt: min_price <= apt.price_soles <= max_price, self.all_apartments)
-            if selected_districts:
-                aux = filter(lambda apt: apt.district in selected_districts, aux)
-
+            aux = filter(lambda apt: apt.district in selected_districts, aux)
             aux = filter(lambda apt: min_bedroom <= apt.bedrooms <= max_bedroom, aux)
+            aux = filter(lambda apt: apt.construction_status in selected_phases, aux)
+            aux = filter(lambda apt: apt.common_area_count >= common_area, aux)
 
             return [
                 dl.TileLayer(),
                 dl.LayerGroup(self.__create_markers(aux))
             ]
-
-        # Get unique districts and min, max values for price_soles and bedrooms
-        unique_districts = sorted(set(apt.district for apt in self.all_apartments))
 
         self.app.layout = html.Main([
             html.Div([
@@ -115,7 +117,15 @@ class AppWeb():
                 ),
             ]),
             html.Div([
-                html.Label('Min Price'),
+                html.Label('Building'),
+                dcc.Dropdown(
+                    id='construction-status-dropdown',
+                    options=[{'label': i, 'value': i} for i in phases],
+                    multi=True
+                ),
+            ]),
+            html.Div([
+                html.Label('Price Min'),
                 dcc.Input(
                     id='min-price-input',
                     type='number',
@@ -123,15 +133,15 @@ class AppWeb():
                 ),
             ]),
             html.Div([
-                html.Label('Max Price'),
+                html.Label('Price Max'),
                 dcc.Input(
                     id='max-price-input',
                     type='number',
-                    value=1_200_000
+                    value=800_000
                 ),
             ]),
             html.Div([
-                html.Label('Min Bedrooms'),
+                html.Label('Bedrooms Min'),
                 dcc.Input(
                     id='min-bedroom-input',
                     type='number',
@@ -139,14 +149,21 @@ class AppWeb():
                 ),
             ]),
             html.Div([
-                html.Label('Max Bedrooms'),
+                html.Label('Bedrooms Max'),
                 dcc.Input(
                     id='max-bedroom-input',
                     type='number',
-                    value=5
+                    value=1
                 ),
             ]),
-
+            html.Div([
+                html.Label('Common Area Min'),
+                dcc.Input(
+                    id='common-area-input',
+                    type='number',
+                    value=1
+                ),
+            ]),
             dl.Map(
                 id="map",
                 center=(-12.0893, -77.0513), zoom=10,
@@ -175,6 +192,7 @@ class AppWeb():
                 html.P(f"Construction status: {apt.construction_status}"),
                 html.P(f"Delivery date: {apt.delivery_date}"),
                 html.P(f"Builder: {apt.builder}"),
+                html.A("More info", href=apt.url, target="_blank")
             ])
             markers.append(dl.Marker(position=(lat, lon),
                                      children=[dl.Tooltip(children=custom_tooltip)]))
