@@ -52,6 +52,7 @@ class MyDb:
     def __create_connection(self):
         try:
             conn = sqlite3.connect(self.filename_db)
+            conn.row_factory = sqlite3.Row
             return conn
         except Error as e:
             log.error("At creating connection")
@@ -74,7 +75,7 @@ class MyDb:
             cursor = conn.cursor()
             cursor.execute(sql)
             rows = cursor.fetchall()
-            return rows
+            return [dict(row) for row in rows]  # convert each row to a dictionary
         except Error as e:
             log.error("At getting all")
             log.error(e)
@@ -113,10 +114,23 @@ class MyDb:
         table_name = dataclass.__name__
         conn = self.__create_connection()
         try:
-            sql = f"SELECT COUNT(*) FROM {table_name};"
-            return self.single(sql)[0]
+            sql = f"SELECT COUNT(*) as total FROM {table_name};"
+            return self.single(sql)["total"]
         except Error as e:
             log.error("At count sql")
+            log.error(e)
+        finally:
+            conn.close()
+
+    def all(self, dataclass):
+        table_name = dataclass.__name__
+        conn = self.__create_connection()
+        try:
+            sql = f"SELECT * FROM {table_name};"
+            rows = self.query(sql)
+            return [dataclass(**row) for row in rows]
+        except Error as e:
+            log.error("At getting all")
             log.error(e)
         finally:
             conn.close()
