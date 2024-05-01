@@ -46,7 +46,9 @@ def _get_delivery_date(soup: BeautifulSoup) -> str:
     return "%d-%02d-%02d" % (year, month_number, day)
 
 
-# end-def
+def _get_common_area_count(soup: BeautifulSoup) -> int:
+    elements = soup.select('.Project-areas-list li')
+    return len(elements)
 
 
 def parse_apartments(html_content: str) -> list[Apartment]:
@@ -78,6 +80,7 @@ def parse_apartments(html_content: str) -> list[Apartment]:
                 area_m2=to_number(area_str),
                 url="",
                 delivery_date=delivery_date,
+                common_area_count=_get_common_area_count(soup)
             ))
 
         log.info("Found %d apartments", len(result))

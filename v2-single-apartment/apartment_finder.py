@@ -23,6 +23,7 @@ class Apartment:
     bank: str = ""
     phones: str = ""
     url_location: str = ""
+    common_area_count: int = 0
     id: str = ""
 
 
