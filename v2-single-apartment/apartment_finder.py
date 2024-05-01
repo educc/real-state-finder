@@ -23,6 +23,7 @@ class Apartment:
     bank: str = ""
     phones: str = ""
     url_location: str = ""
+    id: str = ""
 
 
 class AparmentFinder:

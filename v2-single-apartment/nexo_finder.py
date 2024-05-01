@@ -3,6 +3,7 @@ import logging
 import re
 
 import requests
+from slugify import slugify
 
 from apartment_finder import Apartment, AparmentFinder, CONSTRUCTION_STATUS
 from nexo_downloader import parse_apartments, search_and_get_html_requests
@@ -44,6 +45,7 @@ class NexoFinder(AparmentFinder):
             apartments = _find_by_project(url)
 
             for apartment in apartments:
+                apartment.id = slugify(f"{project.slug}-{project.distrito}-{apartment.bedrooms}-{apartment.area_m2}")
                 apartment.name = project.name
                 apartment.address = project.direccion
                 apartment.district = project.distrito

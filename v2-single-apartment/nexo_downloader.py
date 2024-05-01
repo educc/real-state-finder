@@ -11,6 +11,8 @@ from apartment_finder import Apartment
 from app_config import config
 from utils import to_number, month_number_from_es_name
 
+log = logging.getLogger(__name__)
+
 CUR_DIR = os.path.dirname(__file__)
 NEXO_CACHE_DIR = os.path.join(CUR_DIR, "nexo_cache")
 
@@ -78,11 +80,11 @@ def parse_apartments(html_content: str) -> list[Apartment]:
                 delivery_date=delivery_date,
             ))
 
-        logging.info("Found %d apartments", len(result))
+        log.info("Found %d apartments", len(result))
         return result
     except Exception as e:
-        logging.error("Error parsing apartments")
-        logging.error(e)
+        log.error("Error parsing apartments")
+        log.error(e)
         return []
 
 
@@ -100,8 +102,8 @@ def search_and_get_html_requests(url: str) -> str:
 
         return html_content
     except Exception as e:
-        logging.error("Error searching for %s", url)
-        logging.error(e)
+        log.error("Error searching for %s", url)
+        log.error(e)
         return "<html></html>"
 
 
@@ -124,8 +126,8 @@ def search_and_get_html_chrome(url: str) -> str:
 
         return html_content
     except Exception as e:
-        logging.error("Error searching for %s", url)
-        logging.error(e)
+        log.error("Error searching for %s", url)
+        log.error(e)
         return "<html></html>"
 
 

@@ -2,3 +2,4 @@ venv/
 pycache/
 example.html
 nexo_cache/
+nexo_web/
