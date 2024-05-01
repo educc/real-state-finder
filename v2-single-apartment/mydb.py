@@ -7,16 +7,17 @@ from typing import get_type_hints
 log = logging.getLogger(__name__)
 
 
-def insert_sql(dataclass, instances):
+def insert_sql(dataclass, instance_list):
     table_name = dataclass.__name__
     field_names = [f.name for f in fields(dataclass)]
     columns = ', '.join(field_names)
 
+    placeholders = ', '.join(['?' for _ in field_names])
+    sql = f"INSERT INTO {table_name} ({columns}) VALUES ({placeholders});"
+
     sql_statements = []
-    for instance in instances:
-        placeholders = ', '.join(['?' for _ in field_names])
+    for instance in instance_list:
         values = tuple(asdict(instance).values())
-        sql = f"INSERT INTO {table_name} ({columns}) VALUES ({placeholders});"
         sql_statements.append((sql, values))
 
     return sql_statements

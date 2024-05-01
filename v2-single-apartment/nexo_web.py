@@ -56,5 +56,4 @@ def main():
 
 
 if __name__ == "__main__":
-    # TODO: issue, the loading is duplicating the apartments in sqlite3
     main()
