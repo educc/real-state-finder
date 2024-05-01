@@ -5,7 +5,7 @@ from apartment_finder import Apartment
 from mydb import MyDb, create_table_sql, insert_sql
 from nexo_finder import NexoFinder
 
-logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO)
+logging.basicConfig(format='%(asctime)s - %(name)s - %(message)s', level=logging.INFO)
 log = logging.getLogger(__name__)
 
 CUR_DIR = os.path.dirname(__file__)
@@ -33,14 +33,16 @@ class ApartmentDb:
         db.setup_db(scripts)
         return db
 
-    def add(self, apartments: list[Apartment]):
+    def add(self, fn_get_apartments):
+        if self.db.count(Apartment) > 0:
+            log.info("Apartments already loaded. Skipping...")
+            return
+
+        apartments = fn_get_apartments()
         total = len(apartments)
-        log.info("Adding %d apartments", total)
-        sqls = insert_sql(Apartment, apartments)
 
         current = 1
-        for sql, values in sqls:
-            log.info("Executing: %s", sql)
+        for sql, values in insert_sql(Apartment, apartments):
             self.db.execute(sql, values)
             log.info("Loading apartments %d/%d", current, total)
             current += 1
@@ -50,8 +52,9 @@ def main():
     db = ApartmentDb()
 
     nexo = NexoFinder()
-    db.add(nexo.get_all())
+    db.add(lambda: nexo.get_all())
 
 
 if __name__ == "__main__":
+    # TODO: issue, the loading is duplicating the apartments in sqlite3
     main()

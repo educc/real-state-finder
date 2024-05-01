@@ -63,7 +63,7 @@ class MyDb:
             for sql in sql_script_list:
                 cursor.execute(sql)
         except Error as e:
-            print(e)
+            log.error(e)
         finally:
             conn.close()
 
@@ -90,7 +90,32 @@ class MyDb:
                 cursor.execute(sql)
             conn.commit()
         except Error as e:
-            log.error("At executing parametrized query")
+            log.error("At executing sql")
+            log.error(e)
+        finally:
+            conn.close()
+
+    def single(self, sql: str) -> object:
+        conn = self.__create_connection()
+        try:
+            rows = self.query(sql)
+            if not rows:
+                return None
+            return rows[0]
+        except Error as e:
+            log.error("At single sql")
+            log.error(e)
+        finally:
+            conn.close()
+
+    def count(self, dataclass):
+        table_name = dataclass.__name__
+        conn = self.__create_connection()
+        try:
+            sql = f"SELECT COUNT(*) FROM {table_name};"
+            return self.single(sql)[0]
+        except Error as e:
+            log.error("At count sql")
             log.error(e)
         finally:
             conn.close()
