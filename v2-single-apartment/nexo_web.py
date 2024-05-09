@@ -83,24 +83,29 @@ class AppWeb():
                 Input('max-price-input', 'value'),
                 Input('min-bedroom-input', 'value'),
                 Input('max-bedroom-input', 'value'),
+                Input('min-area-input', 'value'),
+                Input('max-area-input', 'value'),
                 Input('common-area-input', 'value')
             ]
         )
         def update_map(selected_districts, selected_phases, min_price, max_price, min_bedroom, max_bedroom,
-                       common_area):
+                       min_area, max_area, common_area):
             min_price = min_price | 0
             max_price = max_price | 0
             min_bedroom = min_bedroom | 0
             max_bedroom = max_bedroom | 0
+            min_area = min_area | 0
+            max_area = max_area | 0
             selected_districts = selected_districts or unique_districts
             selected_phases = selected_phases or phases
             common_area = common_area | 0
 
-            aux = filter(lambda apt: min_price <= apt.price_soles <= max_price, self.all_apartments)
+            aux = filter(lambda apt: min_price * 1000 <= apt.price_soles <= max_price * 1000, self.all_apartments)
             aux = filter(lambda apt: apt.district in selected_districts, aux)
             aux = filter(lambda apt: min_bedroom <= apt.bedrooms <= max_bedroom, aux)
             aux = filter(lambda apt: apt.construction_status in selected_phases, aux)
             aux = filter(lambda apt: apt.common_area_count >= common_area, aux)
+            aux = filter(lambda apt: min_area <= apt.area_m2 <= max_area, aux)
 
             return [
                 dl.TileLayer(),
@@ -125,35 +130,45 @@ class AppWeb():
                 ),
             ]),
             html.Div([
-                html.Label('Price Min'),
+                html.Label('Price (miles soles) Min '),
                 dcc.Input(
                     id='min-price-input',
                     type='number',
-                    value=50_000
+                    value=150
                 ),
-            ]),
-            html.Div([
-                html.Label('Price Max'),
+                html.Label('Max '),
                 dcc.Input(
                     id='max-price-input',
                     type='number',
-                    value=800_000
+                    value=600
                 ),
             ]),
             html.Div([
-                html.Label('Bedrooms Min'),
+                html.Label('Bedrooms Min '),
                 dcc.Input(
                     id='min-bedroom-input',
                     type='number',
                     value=1
                 ),
-            ]),
-            html.Div([
-                html.Label('Bedrooms Max'),
+                html.Label(' Max '),
                 dcc.Input(
                     id='max-bedroom-input',
                     type='number',
-                    value=1
+                    value=4
+                ),
+            ]),
+            html.Div([
+                html.Label('Area m2 Min '),
+                dcc.Input(
+                    id='min-area-input',
+                    type='number',
+                    value=20
+                ),
+                html.Label(' Max '),
+                dcc.Input(
+                    id='max-area-input',
+                    type='number',
+                    value=100
                 ),
             ]),
             html.Div([
