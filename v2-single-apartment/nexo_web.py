@@ -85,11 +85,12 @@ class AppWeb():
                 Input('max-bedroom-input', 'value'),
                 Input('min-area-input', 'value'),
                 Input('max-area-input', 'value'),
-                Input('common-area-input', 'value')
+                Input('common-area-input', 'value'),
+                Input('investment-input', 'value')
             ]
         )
         def update_map(selected_districts, selected_phases, min_price, max_price, min_bedroom, max_bedroom,
-                       min_area, max_area, common_area):
+                       min_area, max_area, common_area, investment_ratio):
             min_price = min_price | 0
             max_price = max_price | 0
             min_bedroom = min_bedroom | 0
@@ -106,6 +107,7 @@ class AppWeb():
             aux = filter(lambda apt: apt.construction_status in selected_phases, aux)
             aux = filter(lambda apt: apt.common_area_count >= common_area, aux)
             aux = filter(lambda apt: min_area <= apt.area_m2 <= max_area, aux)
+            aux = filter(lambda apt: apt.investment_ratio >= investment_ratio, aux)
 
             return [
                 dl.TileLayer(),
@@ -172,6 +174,15 @@ class AppWeb():
                 ),
             ]),
             html.Div([
+                html.Label('Investment Ratio Min'),
+                dcc.Input(
+                    id='investment-input',
+                    type='number',
+                    step=0.01,
+                    value=0.7
+                ),
+            ]),
+            html.Div([
                 html.Label('Common Area Min'),
                 dcc.Input(
                     id='common-area-input',
@@ -200,13 +211,10 @@ class AppWeb():
                 html.H2(apt.name),
                 html.P(f"District: {apt.district}"),
                 html.P(f"Address: {apt.address}"),
-                html.P(f"Prices: S/ {apt.price_soles}"),
-                html.P(f"Area m2: {apt.area_m2}"),
+                html.P(f"Prices: S/ {apt.price_soles} - {apt.area_m2} m2"),
                 html.P(f"Bedrooms: {apt.bedrooms}"),
                 html.P(f"Common area count: {apt.common_area_count}"),
-                html.P(f"Construction status: {apt.construction_status}"),
-                html.P(f"Delivery date: {apt.delivery_date}"),
-                html.P(f"Builder: {apt.builder}"),
+                html.P(f"Construction status: {apt.construction_status} - {apt.delivery_date}"),
                 html.A("More info", href=apt.url, target="_blank")
             ])
             markers.append(dl.Marker(position=(lat, lon),
