@@ -1,0 +1,167 @@
+[
+    {
+     "district": "Cercado de lima",
+     "bedrooms": 1,
+     "rentPrice": 1750
+    },
+    {
+        "district": "Cercado de lima",
+        "bedrooms": 2,
+        "rentPrice": 2050
+    },
+    {
+        "district": "Cercado de lima",
+        "bedrooms": 3,
+        "rentPrice": 2300
+    },
+    {
+        "district": "Chorrillos",
+        "bedrooms": 1,
+        "rentPrice": 1600
+    },
+    {
+        "district": "Chorrillos",
+        "bedrooms": 2,
+        "rentPrice": 1860
+    },
+    {
+        "district": "Chorrillos",
+        "bedrooms": 3,
+        "rentPrice": 2260
+    },
+    {
+        "district": "Jesus Maria",
+        "bedrooms": 1,
+        "rentPrice": 1850
+    },
+    {
+        "district": "Jesus Maria",
+        "bedrooms": 2,
+        "rentPrice": 2220
+    },
+    {
+        "district": "Jesus Maria",
+        "bedrooms": 3,
+        "rentPrice": 2750
+    },
+    {
+        "district": "Santiago De Surco",
+        "bedrooms": 1,
+        "rentPrice": 1700
+    },
+    {
+        "district": "Santiago De Surco",
+        "bedrooms": 2,
+        "rentPrice": 2475
+    },
+    {
+        "district": "Santiago De Surco",
+        "bedrooms": 3,
+        "rentPrice": 2800
+    },
+    {
+        "district": "Lince",
+        "bedrooms": 1,
+        "rentPrice": 1650
+    },
+    {
+        "district": "Lince",
+        "bedrooms": 2,
+        "rentPrice": 2075
+    },
+    {
+        "district": "Lince",
+        "bedrooms": 3,
+        "rentPrice": 2700
+    },
+    {
+        "district": "Pueblo Libre",
+        "bedrooms": 1,
+        "rentPrice": 1425
+    },
+    {
+        "district": "Pueblo Libre",
+        "bedrooms": 2,
+        "rentPrice": 2150
+    },
+    {
+        "district": "Pueblo Libre",
+        "bedrooms": 3,
+        "rentPrice": 2575
+    },
+    {
+        "district": "Breña",
+        "bedrooms": 1,
+        "rentPrice": 1250
+    },
+    {
+        "district": "Breña",
+        "bedrooms": 2,
+        "rentPrice": 2100
+    },
+    {
+        "district": "Breña",
+        "bedrooms": 3,
+        "rentPrice": 2400
+    },
+    {
+        "district": "San Miguel",
+        "bedrooms": 1,
+        "rentPrice": 1500
+    },
+    {
+        "district": "San Miguel",
+        "bedrooms": 2,
+        "rentPrice": 1950
+    },
+    {
+        "district": "San Miguel",
+        "bedrooms": 3,
+        "rentPrice": 2495
+    },
+    {
+        "district": "Magdalena Del Mar",
+        "bedrooms": 1,
+        "rentPrice": 1625
+    },
+    {
+        "district": "Magdalena Del Mar",
+        "bedrooms": 2,
+        "rentPrice": 2300
+    },
+    {
+        "district": "Magdalena Del Mar",
+        "bedrooms": 3,
+        "rentPrice": 3050
+    },
+    {
+        "district": "San Borja",
+        "bedrooms": 1,
+        "rentPrice": 1650
+    },
+    {
+        "district": "San Borja",
+        "bedrooms": 2,
+        "rentPrice": 2250
+    },
+    {
+        "district": "San Borja",
+        "bedrooms": 3,
+        "rentPrice": 3350
+    },
+    {
+        "district": "La Molina",
+        "bedrooms": 1,
+        "rentPrice": 1450
+    },
+    {
+        "district": "La Molina",
+        "bedrooms": 2,
+        "rentPrice": 2130
+    },
+    {
+        "district": "La Molina",
+        "bedrooms": 3,
+        "rentPrice": 2860
+    }
+]

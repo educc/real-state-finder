@@ -18,12 +18,14 @@ class Apartment:
     bedrooms: int
     bathrooms: int
     area_m2: float
-    url: str
+    common_area_count: int = 0
+    rent_price_soles: int = 0
+    investment_ratio: float = -1
+    url: str = ""
+    url_location: str = ""
     builder: str = ""
     bank: str = ""
     phones: str = ""
-    url_location: str = ""
-    common_area_count: int = 0
     id: str = ""
 
 

@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 import re
 
 import requests
@@ -8,6 +9,9 @@ from slugify import slugify
 from apartment_finder import Apartment, AparmentFinder, CONSTRUCTION_STATUS
 from nexo_downloader import parse_apartments, search_and_get_html_requests
 from nexo_models import ProjectInfo
+
+CUR_DIR = os.path.dirname(__file__)
+RENT_JSON_FILE = os.path.join(CUR_DIR, "lima-rent.json")
 
 
 def _find_by_project(url: str) -> list[Apartment]:
@@ -25,12 +29,28 @@ def _get_phones(project: ProjectInfo) -> str:
     return ",".join(phones)
 
 
+def _get_rent_map_by_district() -> dict[str, dict[str, int]]:
+    data = []
+    with open(RENT_JSON_FILE, "r") as file:
+        data = json.load(file)
+
+    result = {}
+    for item in data:
+        district = item["district"]
+        if district not in result:
+            result[district] = {}
+
+        result[district][item["bedrooms"]] = item["rentPrice"]
+    return result
+
+
 class NexoFinder(AparmentFinder):
 
     def __init__(self, url: str | None = None) -> None:
         self.url = "https://nexoinmobiliario.pe/busqueda/venta-de-departamentos-en-lima-lima-1501"
         if url:
             self.url = url
+        self.rent_map = _get_rent_map_by_district()
 
     def get_all(self) -> list[Apartment]:
         raw_data: list[ProjectInfo] = self.__get_raw_data()
@@ -55,6 +75,11 @@ class NexoFinder(AparmentFinder):
                 apartment.builder = project.builder_name
                 apartment.bank = project.finance_bank
                 apartment.phones = _get_phones(project)
+                apartment.rent_price_soles = self.rent_map.get(apartment.district, {}).get(apartment.bedrooms, -1)
+
+                if apartment.rent_price_soles:
+                    apartment.investment_ratio = round(apartment.rent_price_soles / apartment.price_soles * 100, 2)
+
             items.extend(apartments)
         # end for
 
