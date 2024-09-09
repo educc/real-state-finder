@@ -1,39 +1,30 @@
 import com.typesafe.scalalogging.Logger
-import io.circe.*
-import io.circe.parser.*
-import okhttp3.OkHttpClient
+import io.circe.parser._
 import sttp.client3.okhttp.OkHttpFutureBackend
-import sttp.client3.okhttp.quick.*
+import sttp.client3.okhttp.quick._
 
 import scala.concurrent.{ExecutionContext, Future}
 
-object NexoClient {
+class NexoClient()(implicit ec: ExecutionContext) {
 
   private val logger = Logger(getClass.getSimpleName)
-  private val okHttpClient: OkHttpClient =
-    OkHttpClient
-      .Builder()
-      .callTimeout(java.time.Duration.ofSeconds(10))
-      .build()
-  private val backend = OkHttpFutureBackend.usingClient(okHttpClient)
+  private val backend = OkHttpFutureBackend()
   private val defaultUrl =
     "https://nexoinmobiliario.pe/departamentos/departamentos-lima"
   private val projectUrlPrefix =
     "https://nexoinmobiliario.pe/proyecto/venta-de-departamento-"
 
-  def get(url: String)(implicit
-      ec: ExecutionContext
-  ): Future[String] = {
-    logger.info(s"Fetching $url")
+  def get(url: String): Future[String] = {
     quickRequest
       .get(uri"$url")
       .send(backend)
-      .map(_.body)
+      .map {
+        case response if response.code.isSuccess => response.body
+        case response => throw new Exception(s"Failed to fetch $url: ${response.code}")
+      }
   }
 
-  def findProjectLinks()(implicit
-      ec: ExecutionContext
-  ): Future[List[String]] = {
+  def findProjectLinks(): Future[List[String]] = {
     logger.info(s"Fetching project links from $defaultUrl")
     fetchJsonString(defaultUrl)
       .map { it =>

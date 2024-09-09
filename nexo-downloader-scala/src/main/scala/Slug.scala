@@ -1,4 +1,4 @@
-object Slug:
+object Slug {
   def apply(input: String) = slugify(input)
 
   def slugify(input: String): String = {
@@ -17,3 +17,4 @@ object Slug:
       ) // Replace whitespace (including newlines and repetitions) with single dashes
       .toLowerCase // Lowercase the final results
   }
+}
