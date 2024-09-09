@@ -17,7 +17,7 @@ object Main extends App {
       new ForkJoinPool(8)
     )
 
-  val outputDir = "output-html"
+  val outputDir = "nexo_cache"
   val nexoClient = new NexoClient()
 
   def downloadLink(link: String) = {
