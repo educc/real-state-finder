@@ -1,13 +1,14 @@
+package com.ecacho.paralleldownload
+
+import com.ecacho.paralleldownload.client.{NexoClient, Slug}
 import com.typesafe.scalalogging.Logger
 
 import java.nio.file.Files
 import java.util.concurrent.ForkJoinPool
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext, Future}
-// global import ec
-//import scala.concurrent.ExecutionContext.Implicits.global
 
-object Main extends App {
+object MainFutures extends App {
 
   val logger = Logger(getClass.getSimpleName)
 
@@ -37,6 +38,8 @@ object Main extends App {
 
   val result = nexoClient.findProjectLinks()
   val listOfLinks = Await.result(result, Duration.Inf)
+
+  logger.info(s"Found ${listOfLinks.size} links")
 
   val allFutures = Future.sequence(
     listOfLinks.map(downloadLink)

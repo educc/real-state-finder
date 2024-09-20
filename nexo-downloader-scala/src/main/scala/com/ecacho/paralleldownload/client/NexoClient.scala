@@ -1,7 +1,9 @@
+package com.ecacho.paralleldownload.client
+
 import com.typesafe.scalalogging.Logger
-import io.circe.parser._
 import sttp.client3.okhttp.OkHttpFutureBackend
-import sttp.client3.okhttp.quick._
+import sttp.client3.{UriContext, quickRequest}
+import upickle.default.read
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -20,7 +22,8 @@ class NexoClient()(implicit ec: ExecutionContext) {
       .send(backend)
       .map {
         case response if response.code.isSuccess => response.body
-        case response => throw new Exception(s"Failed to fetch $url: ${response.code}")
+        case response =>
+          throw new Exception(s"Failed to fetch $url: ${response.code}")
       }
   }
 
@@ -28,13 +31,11 @@ class NexoClient()(implicit ec: ExecutionContext) {
     logger.info(s"Fetching project links from $defaultUrl")
     fetchJsonString(defaultUrl)
       .map { it =>
-        parse(it).toOption
-          .map(arr => arr \\ "slug")
-          .getOrElse(List.empty)
+        read[List[ProjectItem]](it)
       }
       .map(it =>
         it
-          .map(_.asString.getOrElse(""))
+          .map(_.slug)
           .map(slug => s"$projectUrlPrefix$slug")
       )
   }

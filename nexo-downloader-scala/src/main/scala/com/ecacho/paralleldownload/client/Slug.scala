@@ -1,3 +1,5 @@
+package com.ecacho.paralleldownload.client
+
 object Slug {
   def apply(input: String) = slugify(input)
 
