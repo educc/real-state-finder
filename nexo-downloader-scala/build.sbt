@@ -20,6 +20,9 @@ lazy val root = project
     libraryDependencies ++= Seq(
       "com.lihaoyi" %% "upickle" % "4.0.0"
     ),
+    libraryDependencies ++= Seq(
+      "dev.zio" %% "zio" % "2.1.9"
+    ),
     // TESTS
     libraryDependencies += "org.scalameta" %% "munit" % "1.0.0" % Test
   )
