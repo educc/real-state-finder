@@ -21,6 +21,13 @@ object MainFutures extends App {
   val outputDir = "nexo_cache"
   val nexoClient = new NexoClient()
 
+  def create_download_dir_if_not_exists() = {
+    val dir = new java.io.File(outputDir)
+    if (!dir.exists()) {
+      dir.mkdir()
+    }
+  }
+
   def downloadLink(link: String) = {
     nexoClient
       .get(link)
@@ -35,6 +42,10 @@ object MainFutures extends App {
       }
 
   }
+
+  // main logic
+
+  create_download_dir_if_not_exists()
 
   val result = nexoClient.findProjectLinks()
   val listOfLinks = Await.result(result, Duration.Inf)
