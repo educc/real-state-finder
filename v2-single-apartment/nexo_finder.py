@@ -2,7 +2,7 @@ import json
 import logging
 import os
 import re
-
+import concurrent.futures
 import requests
 from slugify import slugify
 
@@ -53,35 +53,38 @@ class NexoFinder(AparmentFinder):
         self.rent_map = _get_rent_map_by_district()
 
     def get_all(self) -> list[Apartment]:
+        def find_apartment(project: ProjectInfo) -> (list[Apartment], str):
+            url: str = f"https://nexoinmobiliario.pe/proyecto/venta-de-departamento-{project.slug}"
+            return project, _find_by_project(url), url
+
+        def find_apartments_from_list(raw_data: list[ProjectInfo]):
+            for i, project in enumerate(raw_data):
+                percent = round((i + 1) / total * 100)
+                logging.info("Processing project %d%% (%d/%d): %s", percent, i + 1, total, project.slug)
+
+                url: str = f"https://nexoinmobiliario.pe/proyecto/venta-de-departamento-{project.slug}"
+                yield project, _find_by_project(url), url
+        # end
         raw_data: list[ProjectInfo] = self.__get_raw_data()
 
         items: list[Apartment] = []
         total = len(raw_data)
-        for i, project in enumerate(raw_data):
-            percent = round((i + 1) / total * 100)
-            logging.info("Processing project %d%% (%d/%d): %s", percent, i + 1, total, project.slug)
 
-            url: str = f"https://nexoinmobiliario.pe/proyecto/venta-de-departamento-{project.slug}"
-            apartments = _find_by_project(url)
+        with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
+            futures = [executor.submit(find_apartment, project) for project in raw_data]
 
-            for apartment in apartments:
-                apartment.id = slugify(f"{project.slug}-{project.distrito}-{apartment.bedrooms}-{apartment.area_m2}")
-                apartment.name = project.name
-                apartment.address = project.direccion
-                apartment.district = project.distrito
-                apartment.url = url
-                apartment.construction_status = CONSTRUCTION_STATUS[project.project_phase]
-                apartment.url_location = _get_googlemap_url(project.coord_lat, project.long)
-                apartment.builder = project.builder_name
-                apartment.bank = project.finance_bank
-                apartment.phones = _get_phones(project)
-                apartment.rent_price_soles = self.rent_map.get(apartment.district, {}).get(apartment.bedrooms, -1)
+            i = 0
+            for future in concurrent.futures.as_completed(futures):
+                project, apartments, url = future.result()
 
-                if apartment.rent_price_soles:
-                    apartment.investment_ratio = round(apartment.rent_price_soles / apartment.price_soles * 100, 2)
+                percent = round((i + 1) / total * 100)
+                logging.info("Processing project %d%% (%d/%d): %s", percent, i + 1, total, project.slug)
 
-            items.extend(apartments)
-        # end for
+                for apartment in apartments:
+                    self.__add_project_data_to_apartment(apartment, project, url)
+                items.extend(apartments)
+                i = i + 1
+        # end with
 
         return items
 
@@ -94,8 +97,24 @@ class NexoFinder(AparmentFinder):
         match = re.search(pattern, html_text, re.DOTALL)
         if match:
             list_dict = json.loads(match.group(1))
-            return [ProjectInfo(**item) for item in list_dict]
+            return [ProjectInfo.from_dict(item) for item in list_dict]
         return []
+
+    def __add_project_data_to_apartment(self, apartment: Apartment, project: ProjectInfo, url: str) -> None:
+        apartment.id = slugify(f"{project.slug}-{project.distrito}-{apartment.bedrooms}-{apartment.area_m2}")
+        apartment.name = project.name
+        apartment.address = project.direccion
+        apartment.district = project.distrito
+        apartment.url = url
+        apartment.construction_status = CONSTRUCTION_STATUS[project.project_phase]
+        apartment.url_location = _get_googlemap_url(project.coord_lat, project.long)
+        apartment.builder = project.builder_name
+        apartment.bank = project.finance_bank
+        apartment.phones = _get_phones(project)
+        apartment.rent_price_soles = self.rent_map.get(apartment.district, {}).get(apartment.bedrooms, -1)
+
+        if apartment.rent_price_soles:
+            apartment.investment_ratio = round(apartment.rent_price_soles / apartment.price_soles * 100, 2)
 
 
 if __name__ == "__main__":
