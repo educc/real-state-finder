@@ -1,6 +1,6 @@
 import logging
 import os
-
+import argparse
 import dash
 import dash_leaflet as dl
 from dash import html, dcc, Output, Input
@@ -12,6 +12,7 @@ from nexo_finder import NexoFinder
 logging.basicConfig(format='%(asctime)s - %(name)s - %(message)s', level=logging.INFO)
 log = logging.getLogger(__name__)
 
+DASH_PORT=8050
 CUR_DIR = os.path.dirname(__file__)
 NEXO_CACHE_DIR = os.path.join(CUR_DIR, "nexo_web")
 DB_FILE = os.path.join(NEXO_CACHE_DIR, "nexo_web.sqlite3")
@@ -46,7 +47,9 @@ class ApartmentDb:
         return db
 
     def add(self, fn_get_apartments):
-        if self.db.count(Apartment) > 0:
+        table_count = self.db.count(Apartment)
+        log.info(f"Current apartment count: %d", table_count)
+        if table_count > 0:
             log.info("Apartments already loaded. Skipping...")
             return
 
@@ -199,7 +202,9 @@ class AppWeb():
                 ], style={'width': '1000px', 'height': '500px'}),
         ])
 
-        self.app.run_server(debug=True)
+
+        logging.info(f"Application starting at: http://localhost:{DASH_PORT}")
+        self.app.run(debug=True, port=DASH_PORT)
 
     @staticmethod
     def __create_markers(data):
@@ -228,4 +233,12 @@ def main():
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Apartment Finder Web App')
+    parser.add_argument('--resetdb', action='store_true', help='Reset database')
+    args = parser.parse_args()
+
+    if args.resetdb:
+        log.info(f"Deleting database file: {DB_FILE}")
+        os.remove(DB_FILE)
+
     main()
