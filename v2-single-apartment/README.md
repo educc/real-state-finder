@@ -6,7 +6,7 @@ again.
 
 ## Requirements
 
-- Python 3.11
+- Python 3.12
 - Install requirements.txt
 
 ## How to run

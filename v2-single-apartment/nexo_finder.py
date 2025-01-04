@@ -1,17 +1,21 @@
+import concurrent.futures
 import json
 import logging
 import os
 import re
-import concurrent.futures
+
 import requests
 from slugify import slugify
 
 from apartment_finder import Apartment, AparmentFinder, CONSTRUCTION_STATUS
+from app_config import is_test, thread_size
 from nexo_downloader import parse_apartments, search_and_get_html_requests
 from nexo_models import ProjectInfo
 
 CUR_DIR = os.path.dirname(__file__)
 RENT_JSON_FILE = os.path.join(CUR_DIR, "lima-rent.json")
+
+log = logging.getLogger(__name__)
 
 
 def _find_by_project(url: str) -> list[Apartment]:
@@ -64,13 +68,19 @@ class NexoFinder(AparmentFinder):
 
                 url: str = f"https://nexoinmobiliario.pe/proyecto/venta-de-departamento-{project.slug}"
                 yield project, _find_by_project(url), url
+
         # end
         raw_data: list[ProjectInfo] = self.__get_raw_data()
+        if is_test() and len(raw_data) > 0:
+            log.info(f"Config test=true, using first project: {raw_data[0].slug}")
+            raw_data = raw_data[0:1]
 
         items: list[Apartment] = []
         total = len(raw_data)
 
-        with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
+        log.info(f"Finding data from {total} projects")
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=thread_size()) as executor:
             futures = [executor.submit(find_apartment, project) for project in raw_data]
 
             i = 0
@@ -114,7 +124,10 @@ class NexoFinder(AparmentFinder):
         apartment.rent_price_soles = self.rent_map.get(apartment.district, {}).get(apartment.bedrooms, -1)
 
         if apartment.rent_price_soles:
-            apartment.investment_ratio = round(apartment.rent_price_soles / apartment.price_soles * 100, 2)
+            try:
+                apartment.investment_ratio = round(apartment.rent_price_soles / apartment.price_soles * 100, 2)
+            except ZeroDivisionError:
+                apartment.investment_ratio = -1
 
 
 if __name__ == "__main__":
