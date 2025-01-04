@@ -5,3 +5,5 @@ nexo_cache/
 nexo_web/
 
 __pycache__
+
+result.*
