@@ -1,0 +1,35 @@
+# Ignore all files and directories
+*
+
+# Include specific files and directories
+!Dockerfile
+!requirements.txt
+!*.py
+!lima-rent.json
+
+# Exclude virtual environment, build artifacts, and cache
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.swp
+*.bak
+
+# Exclude test files if not needed in production image
+tests/
+test_*
+*_test.py
+
+# Exclude static files and media if using a web framework like Django or Flask
+static/
+media/
+
+# Ignore logs
+logs/
+
+# Ignore configuration files that might contain sensitive information
+.env
+.config
+*.conf
+
+# Exclude any other directories or files that are not needed in the production environment
