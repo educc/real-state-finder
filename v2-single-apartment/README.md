@@ -55,3 +55,17 @@ This program run a website to show the data downloaded from nexoinmobiliario, it
 python nexo_web.py
 
 ```
+
+## deploy PROD
+
+```bash
+
+# [1] Build docker image:
+
+docker build -t v2-single-apartment .
+
+#[2] Start container with volumes attached to persist data:
+
+docker run --name v2-single-apartment -v /home/edu/data/v2-single-apartment:/app/data v2-single-apartment -o all --output-dir /app/data
+
+```
