@@ -2,6 +2,7 @@ import argparse
 import logging
 import os
 from dataclasses import dataclass, asdict
+from datetime import datetime
 
 import pandas as pd
 
@@ -29,12 +30,19 @@ def write_data(data: list, args: AppArgs):
         df.to_excel(filename, index=False)
 
     def write_sqlite(data: list):
+        def create_dataframe():
+            df = pd.DataFrame(data)
+            today = datetime.now().date()
+            df['created_at'] = today
+            df.set_index("created_at", inplace=True)
+            return df
+
         filename = os.path.join(args.output_dir, "result.sqlite")
         log.info(f"Writing data to SQLite3: {filename}")
 
         url_connection = f"sqlite:///{filename}"
-        df = pd.DataFrame(data)
-        df.to_sql("apartments", url_connection, if_exists="replace", index=False)
+        df = create_dataframe()
+        df.to_sql("apartments", url_connection, if_exists="append", index=True)
 
     if args.output_type == "all":
         write_excel(data)
