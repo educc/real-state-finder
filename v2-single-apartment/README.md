@@ -45,6 +45,11 @@ expected.
 python main.py -o all --use-cache --test
 ```
 
+## lima-rent.json
+
+Este archivo contiene el precio de renta de alquiler en soles por distrito y habitaciones en Lima.
+La fórmula es: (precio alquiler máximo + precio alquiler mínimo) / 2
+
 ## nexo_web
 
 This program run a website to show the data downloaded from nexoinmobiliario, it uses the cache data from the
