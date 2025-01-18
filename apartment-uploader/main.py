@@ -34,11 +34,15 @@ def __write_json_file(data: list[dict], filename_json: str):
                 "district": item.get("district"),
                 "price_soles": item.get("price_soles"),
                 "area_m2": item.get("area_m2"),
+                "delivery_date": item.get("delivery_date"),
+                "address": item.get("address"),
+                "bedrooms": item.get("bedrooms"),
+                "rent_price_soles": item.get("rent_price_soles"),
             }
         )
 
     with open(filename_json, "w", encoding="utf-8") as myfile:
-        json.dump(data, myfile)
+        json.dump(new_data, myfile)
 
 
 def __query_data_sqlite3(database_path, query) -> list[dict]:
@@ -78,6 +82,36 @@ def __upload_file(filename: str, args: AppArgs):
         ftp.quit()
 
 
+def top_apartments(args: AppArgs) -> list[dict]:
+    row = __query_data_sqlite3(
+        args.filename_sqlite3_db, "select max(created_at) as latest from apartments"
+    )
+
+    sql = """
+        SELECT *
+        from (select *,
+                     rank() OVER (partition by name ORDER BY price_soles) AS rn
+              FROM apartments) t1
+        where t1.rn = 1 and rent_price_soles > 0
+    """
+
+    sql_suffix = " order by price_soles limit 10"
+    if row:
+        sql += f" and created_at = '{row[0]['latest']}'"
+    sql = sql + sql_suffix
+
+    data = __query_data_sqlite3(args.filename_sqlite3_db, sql)
+
+    def calculation_investment_ratio(it: dict) -> float:
+        rent_price = it.get("rent_price_soles", it.get(1_000_000))
+        anual_rent_price = rent_price * 12
+        investment_ratio = anual_rent_price / it.get("price_soles", it.get(0))
+        return investment_ratio
+
+    result = [it for it in data if calculation_investment_ratio(it) <= 0.20]
+    return result[0:5]
+
+
 def main(args: AppArgs):
     log.info(f"Arguments used are: {args}")
 
@@ -86,8 +120,7 @@ def main(args: AppArgs):
         log.error(f"SQLite3 DB file not found: {args.filename_sqlite3_db}")
         sys.exit(1)
 
-    sql = "select * from apartments order by investment_ratio DESC limit 5"
-    data = __query_data_sqlite3(args.filename_sqlite3_db, sql)
+    data = top_apartments(args)
 
     log.info(f"Query result count: {len(data)}")
 
