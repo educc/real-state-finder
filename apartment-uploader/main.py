@@ -6,10 +6,25 @@ import os
 import sqlite3
 import sys
 from dataclasses import dataclass
+from logging.handlers import RotatingFileHandler
+
+LOG_DIR = os.getenv("APARTMENT_UPLOADER_LOG_DIR", "/var/log")
+os.makedirs(LOG_DIR, exist_ok=True)
+
+# Set up logging
+log_file = os.path.join(LOG_DIR, "apartment-uploader.log")
+formatter = logging.Formatter(
+    "%(levelname)s - %(asctime)s [%(name)s]  - %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
+)
+
+file_handler = RotatingFileHandler(log_file, maxBytes=5 * 1024 * 1024, backupCount=0)
+file_handler.setFormatter(formatter)
 
 logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+    level=logging.INFO,
+    handlers=[file_handler],
 )
+
 log = logging.getLogger(__name__)
 
 
