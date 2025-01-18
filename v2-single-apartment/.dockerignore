@@ -8,8 +8,10 @@
 !lima-rent.json
 
 # Exclude virtual environment, build artifacts, and cache
+.idea
 venv/
 __pycache__/
+nexo_cache/
 *.pyc
 *.pyo
 *.swp

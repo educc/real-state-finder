@@ -3,6 +3,7 @@ import logging
 import os
 from dataclasses import dataclass, asdict
 from datetime import datetime
+from logging.handlers import RotatingFileHandler
 
 import pandas as pd
 
@@ -10,7 +11,20 @@ from apartment_finder import AparmentFinder
 from app_config import set_config, AppConfig, config
 from nexo_finder import NexoFinder
 
-logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO)
+LOG_DIR = os.getenv("V2_SINGLE_APARTMENT_LOG_DIR", "/var/log")
+os.makedirs(LOG_DIR, exist_ok=True)
+
+# Set up logging
+log_file = os.path.join(LOG_DIR, "v2-single-apartment.log")
+formatter = logging.Formatter('%(levelname)s - %(asctime)s [%(name)s]  - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+
+file_handler = RotatingFileHandler(log_file, maxBytes=5 * 1024 * 1024, backupCount=0)
+file_handler.setFormatter(formatter)
+
+logging.basicConfig(level=logging.INFO,
+                    handlers=[file_handler],
+                    )
+
 log = logging.getLogger(__name__)
 
 
