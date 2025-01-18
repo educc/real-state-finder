@@ -10,6 +10,10 @@ top.json, this file will be upload to the FTP server.
 ## How to run
 
 ```bash
+
+# setting log dir to the current directory
+export APARTMENT_UPLOADER_LOG_DIR=./
+
 python main.py \
     --sqlite-db /path/to/your/sqlite3.db \
     --ftp-user your_ftp_username \
