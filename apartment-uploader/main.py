@@ -19,10 +19,12 @@ formatter = logging.Formatter(
 
 file_handler = RotatingFileHandler(log_file, maxBytes=5 * 1024 * 1024, backupCount=0)
 file_handler.setFormatter(formatter)
+console_handler = logging.StreamHandler()
+console_handler.setFormatter(formatter)
 
 logging.basicConfig(
     level=logging.INFO,
-    handlers=[file_handler],
+    handlers=[file_handler, console_handler],
 )
 
 log = logging.getLogger(__name__)
@@ -103,24 +105,32 @@ def top_apartments(args: AppArgs) -> list[dict]:
     )
 
     sql = """
+        WITH RankedApartments AS (
+            SELECT
+                *,
+                ROW_NUMBER() OVER (PARTITION BY name ORDER BY price_soles) AS rn
+            FROM
+                apartments
+            WHERE
+                rent_price_soles > 0
+              $CREATED_CLAUSE
+        )
         SELECT *
-        from (select *,
-                     rank() OVER (partition by name ORDER BY price_soles) AS rn
-              FROM apartments) t1
-        where t1.rn = 1 and rent_price_soles > 0
+        FROM RankedApartments
+        WHERE rn = 1
+        ORDER BY price_soles
+        LIMIT 10;
     """
-
-    sql_suffix = " order by price_soles limit 10"
     if row:
-        sql += f" and created_at = '{row[0]['latest']}'"
-    sql = sql + sql_suffix
+        sql = sql.replace("$CREATED_CLAUSE", f"AND created_at < '{row[0]["latest"]}'")
 
     data = __query_data_sqlite3(args.filename_sqlite3_db, sql)
 
     def calculation_investment_ratio(it: dict) -> float:
         rent_price = it.get("rent_price_soles", it.get(1_000_000))
+        price_soles = it.get("price_soles", 1)
         anual_rent_price = rent_price * 12
-        investment_ratio = anual_rent_price / it.get("price_soles", it.get(0))
+        investment_ratio = anual_rent_price / price_soles
         return investment_ratio
 
     result = [it for it in data if calculation_investment_ratio(it) <= 0.20]
@@ -138,6 +148,7 @@ def main(args: AppArgs):
     data = top_apartments(args)
 
     log.info(f"Query result count: {len(data)}")
+    log.info(f"{[it['name'] for it in data]}")
 
     tmp_filename = "apartment_list.json"
     __write_json_file(data, tmp_filename)
