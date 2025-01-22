@@ -121,9 +121,10 @@ def top_apartments(args: AppArgs) -> list[dict]:
         ORDER BY price_soles
         LIMIT 10;
     """
-    if row:
-        sql = sql.replace("$CREATED_CLAUSE", f"AND created_at < '{row[0]["latest"]}'")
+    if len(row) > 0:
+        sql = sql.replace("$CREATED_CLAUSE", f" AND created_at = '{row[0]["latest"]}'")
 
+    print(sql)
     data = __query_data_sqlite3(args.filename_sqlite3_db, sql)
 
     def calculation_investment_ratio(it: dict) -> float:
