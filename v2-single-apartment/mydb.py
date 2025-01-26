@@ -8,7 +8,7 @@ log = logging.getLogger(__name__)
 
 
 def insert_sql(dataclass, instance_list):
-    table_name = dataclass.__name__
+    table_name = dataclass.__name__.lower()
     field_names = [f.name for f in fields(dataclass)]
     columns = ', '.join(field_names)
 
@@ -36,7 +36,7 @@ def create_table_sql(dataclass):
         sql_type = type_mapping.get(field_type, "TEXT")
         columns.append(f"{field.name} {sql_type}")
 
-    table_name = dataclass.__name__
+    table_name = dataclass.__name__.lower()
     columns_sql = ", ".join(columns)
     return f"CREATE TABLE IF NOT EXISTS {table_name} ({columns_sql});"
 

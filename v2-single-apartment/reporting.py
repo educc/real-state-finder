@@ -42,7 +42,7 @@ def __write_json_file(data: list[Apartment], filename_json: str):
 
 
 def __get_n_cheapest_apartment(size: int, db: MyDb) -> list[Apartment]:
-    row = db.query("select max(created_at) as latest from apartments")
+    row = db.query("select max(created_at) as latest from apartment")
 
     sql = f"""
         WITH RankedApartments AS (
@@ -50,7 +50,7 @@ def __get_n_cheapest_apartment(size: int, db: MyDb) -> list[Apartment]:
                 *,
                 ROW_NUMBER() OVER (PARTITION BY name ORDER BY price_soles) AS rn
             FROM
-                apartments
+                apartment
             WHERE
                 rent_price_soles > 0
               $CREATED_CLAUSE
