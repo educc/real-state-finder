@@ -134,3 +134,22 @@ class MyDb:
             log.error(e)
         finally:
             conn.close()
+
+    def insert_all(self, dataclass, instance_list):
+        if not isinstance(instance_list, list) or not all(isinstance(i, dataclass) for i in instance_list):
+            raise ValueError("A list of instances of the specified dataclass is required.")
+
+        sql_statements = insert_sql(dataclass, instance_list)
+
+        conn = self.__create_connection()
+        try:
+            cursor = conn.cursor()
+            for sql, values in sql_statements:
+                cursor.execute(sql, values)
+            conn.commit()
+        except Error as e:
+            log.error("At inserting all instances")
+            log.error(e)
+        finally:
+            conn.close()
+    #

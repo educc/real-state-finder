@@ -2,14 +2,15 @@ import argparse
 import logging
 import os
 from dataclasses import dataclass, asdict
-from datetime import datetime
 from logging.handlers import RotatingFileHandler
 
 import pandas as pd
 
-from apartment_finder import AparmentFinder
+from apartment_finder import Apartment, AparmentFinder
 from app_config import set_config, AppConfig, config
+from mydb import MyDb, create_table_sql
 from nexo_finder import NexoFinder
+from reporting import generate_reports
 
 LOG_DIR = os.getenv("V2_SINGLE_APARTMENT_LOG_DIR", "/var/log")
 os.makedirs(LOG_DIR, exist_ok=True)
@@ -36,35 +37,18 @@ class AppArgs:
     use_cache: bool = False
 
 
-def write_data(data: list, args: AppArgs):
-    def write_excel(data: list):
-        filename = os.path.join(args.output_dir, "result.xlsx")
-        log.info(f"Writing data to Excel: {filename}")
-        df = pd.DataFrame(data)
-        df.to_excel(filename, index=False)
+def write_excel(excel_filename: str, data: list[Apartment]):
+    log.info(f"Writing data to Excel: {excel_filename}")
+    df = pd.DataFrame(data)
+    df.to_excel(excel_filename, index=False)
 
-    def write_sqlite(data: list):
-        def create_dataframe():
-            df = pd.DataFrame(data)
-            today = datetime.now().date()
-            df['created_at'] = today
-            df.set_index("created_at", inplace=True)
-            return df
 
-        filename = os.path.join(args.output_dir, "result.sqlite")
-        log.info(f"Writing data to SQLite3: {filename}")
-
-        url_connection = f"sqlite:///{filename}"
-        df = create_dataframe()
-        df.to_sql("apartments", url_connection, if_exists="append", index=True)
-
-    if args.output_type == "all":
-        write_excel(data)
-        write_sqlite(data)
-    elif args.output_type == "sqlite3":
-        write_sqlite(data)
-    elif args.output_type == "excel":
-        write_excel(data)
+def write_sqlite(db_filename: str, data: list[Apartment]):
+    log.info(f"Writing data to SQLite: {db_filename}")
+    db = MyDb(db_filename)
+    sql_table = create_table_sql(Apartment)
+    db.execute(sql_table)
+    db.insert_all(Apartment, data)
 
 
 def set_new_config(args: AppArgs):
@@ -78,11 +62,27 @@ def set_new_config(args: AppArgs):
 
 def main(args: AppArgs):
     set_new_config(args)
+    # [1] Finding data
     finder: AparmentFinder = NexoFinder()
     data = finder.get_all()
+
     # sorting data by price_soles column asc
     data = sorted(data, key=lambda x: x.price_soles)
-    write_data(data, args)
+    #
+    # # [2] writing data
+    excel_filename = os.path.join(args.output_dir, 'result.xlsx')
+    sqlite_filename = os.path.join(args.output_dir, 'result.sqlite')
+
+    if args.output_type == "all":
+        write_excel(excel_filename, data)
+        write_sqlite(sqlite_filename, data)
+    elif args.output_type == "sqlite3":
+        write_sqlite(sqlite_filename, data)
+    elif args.output_type == "excel":
+        write_excel(excel_filename, data)
+
+    # [3] Generating reports
+    generate_reports(args.output_dir, sqlite_filename)
 
 
 if __name__ == "__main__":
@@ -101,6 +101,6 @@ if __name__ == "__main__":
         output_type=args.output,
         output_dir=args.output_dir,
         test=args.test,
-        use_cache=args.use_cache,
+        use_cache=args.use_cache
     )
     main(app_args)
