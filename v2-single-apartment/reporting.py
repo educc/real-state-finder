@@ -62,6 +62,7 @@ def __calculation_investment_ratio(it: Apartment) -> float:
 
 
 def __get_n_cheapest_apartment(size: int, db: MyDb) -> list[Apartment]:
+    log.info(f"Getting {size} cheapest apartments")
     row = db.query("select max(created_at) as latest from apartment")
 
     sql = f"""
@@ -91,6 +92,7 @@ def __get_n_cheapest_apartment(size: int, db: MyDb) -> list[Apartment]:
 
 
 def __get_n_cheapest_apartment_by_district(district: str, size: int, db: MyDb) -> list[Apartment]:
+    log.info(f"Getting {size} cheapest apartments by district {district}")
     row = db.query("select max(created_at) as latest from apartment")
 
     sql = f"""
