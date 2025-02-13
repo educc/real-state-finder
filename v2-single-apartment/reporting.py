@@ -9,6 +9,13 @@ from mydb import MyDb
 log = logging.getLogger(__name__)
 
 
+def __take_last_one(list_str: str) -> str:
+    if list_str.strip() == "":
+        return ""
+    parts = list_str.split(",")
+    return parts[-1]
+
+
 def __build_google_search_url(text):
     base_url = "https://www.google.com/search?"
     query_params = {'q': text}
@@ -40,7 +47,7 @@ def __write_json_vip_file(data: list[dict], filename_json: str):
         new_list = []
         for apartment in item["list"]:
             new_apartment = __build_dict_from_apartment(apartment)
-            new_apartment["phones"] = apartment.phones
+            new_apartment["phones"] = __take_last_one(apartment.phones)
             new_list.append(new_apartment)
         item["list"] = new_list
         new_data.append(item)
