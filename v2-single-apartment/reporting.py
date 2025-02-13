@@ -141,6 +141,13 @@ def generate_reports(output_directory: str, database_filename: str) -> None:
 
     # [2] Generating vip
 
+    vip_list = []
+    vip_list.append({
+        "group": "Todo Lima",
+        "district": "todo Lima",
+        "list": top5
+    })
+
     lima_top = [
         "San Isidro",
         "Miraflores",
@@ -149,7 +156,6 @@ def generate_reports(output_directory: str, database_filename: str) -> None:
         "Santiago De Surco",
     ]
 
-    vip_list = []
     for district in lima_top:
         rows = __get_n_cheapest_apartment_by_district(district, 5, db)
         if len(rows) > 0:
