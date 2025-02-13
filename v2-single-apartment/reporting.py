@@ -18,6 +18,7 @@ def __build_google_search_url(text):
 
 def __build_dict_from_apartment(item: Apartment) -> dict:
     url = __build_google_search_url("proyecto " + item.name + " en Lima")
+
     return {
         "created_at": item.created_at,
         "name": item.name,
@@ -28,14 +29,20 @@ def __build_dict_from_apartment(item: Apartment) -> dict:
         "address": item.address,
         "bedrooms": item.bedrooms,
         "rent_price_soles": item.rent_price_soles,
-        "url": url
+        "url": url,
+        "url_maps": item.url_location
     }
 
 
 def __write_json_vip_file(data: list[dict], filename_json: str):
     new_data = []
     for item in data:
-        item["list"] = [__build_dict_from_apartment(it) for it in item["list"]]
+        new_list = []
+        for apartment in item["list"]:
+            new_apartment = __build_dict_from_apartment(apartment)
+            new_apartment["phones"] = apartment.phones
+            new_list.append(new_apartment)
+        item["list"] = new_list
         new_data.append(item)
 
     with open(filename_json, "w", encoding="utf-8") as my_file:
@@ -115,6 +122,8 @@ def __get_n_cheapest_apartment_by_district(district: str, size: int, db: MyDb) -
     """
     if len(row) > 0:
         sql = sql.replace("$CREATED_CLAUSE", f" AND created_at = '{row[0]["latest"]}'")
+
+    log.info(sql)
     data_raw = db.query(sql)
     data = [Apartment.from_dict(it) for it in data_raw]
 
