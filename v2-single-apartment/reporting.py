@@ -130,7 +130,6 @@ def __get_n_cheapest_apartment_by_district(district: str, size: int, db: MyDb) -
     if len(row) > 0:
         sql = sql.replace("$CREATED_CLAUSE", f" AND created_at = '{row[0]["latest"]}'")
 
-    log.info(sql)
     data_raw = db.query(sql)
     data = [Apartment.from_dict(it) for it in data_raw]
 
