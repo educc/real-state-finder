@@ -81,6 +81,7 @@ class MyDb:
             log.error(e)
         finally:
             conn.close()
+        return None
 
     def execute(self, sql: str, values=None) -> None:
         conn = self.__create_connection()

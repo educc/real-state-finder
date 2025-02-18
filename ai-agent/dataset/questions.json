@@ -1,0 +1,57 @@
+[
+  {
+    "question": "busco departamento en lince",
+    "expected": "district = 'Lince'",
+    "expected_item": "Lince | Mural Lince | S/ 199057 | 1 | 20.522 m2 | 2027-07-31"
+  },
+  {
+    "question": "depa de un dormitorio",
+    "expected": "bedrooms = 1",
+    "expected_item": "Chorrillos | FLORECE ETAPA 2 | S/ 147000 | 1 | 25.242 m2 | 2027-03-15"
+  },
+  {
+    "question": "lo mas barato en san isidro",
+    "expected": "district = 'San Isidro'",
+    "expected_item": "San Isidro | Preminenza | S/ 273800 | 1 | 28.922 m2 | 2026-10-30"
+  },
+  {
+    "question": "quiero departamento de 3 dormitorios en surco",
+    "expected": "bedrooms = 3 and district = 'Santiago de Surco'",
+    "expected_item": "Santiago De Surco | BONGO CONDOMINIO | S/ 331740 | 3 | 73.102 m2 | 2026-08-31"
+  },
+  {
+    "question": "un depa en construccion en jesus maria",
+    "expected": "construction_status = 'construcción' AND district = 'Jesus Maria",
+    "expected_item": "Jesus Maria | Botanika | S/ 255000 | 1 | 29.402 m2 | 2025-11-30"
+  },
+  {
+    "question": "en san miguel de minimo 40 m2",
+    "expected": "area_m2 >= 40 and district = 'San Miguel'",
+    "expected_item": "San Miguel | ECO AMIRA | S/ 231000 | 1 | 40.452 m2 | 2026-12-31"
+  },
+  {
+    "question": "busco depa en miraflores de dos dormitorios como maximo 500000 soles",
+    "expected": "price_soles <= 500000 AND district = 'Miraflores' AND bedrooms >= 2`",
+    "expected_item": "Miraflores | Centrix 28 | S/ 394500 | 2 | 49.232 m2 | 2026-12-31"
+  },
+  {
+    "question": "quiero comprar en Chorrillos de 3 cuartos de al menos 100 metros",
+    "expected": "district = 'Chorrillos' AND bedrooms >= 3 AND area_m2 >= 100",
+    "expected_item": "Chorrillos | Faisanes III | S/ 467830 | 3 | 101.572 m2 | 2027-08-31"
+  },
+  {
+    "question": "quiero un depa que se alquiler como minimo en 2000 soles",
+    "expected": "rent_price_soles >= 2000",
+    "expected_item": "Puente Piedra | Ciudad Verde | S/ 176735 | 3 | 58.452 m2 | inmediata"
+  },
+  {
+    "question": "un depa en magdalena que se entregue este año",
+    "expected": "district = 'Magdalena del Mar' and delivery_date LIKE '2025%'",
+    "expected_item": "Magdalena Del Mar | Estrenos | S/ 217695 | 1 | 33.422 m2 | 2025-09-30"
+  },
+  {
+    "question": "depa en planos de 3 dormitorios en san isidro para el 2026",
+    "expected": "construction_status = 'Planos' and bedrooms = 3 and district = 'San Isidro' and delivery_date LIKE '2026%'",
+    "expected_item": "San Isidro | LUUP | S/ 530000 | 3 | 61.302 m2 | 2026-09-30"
+  }
+]

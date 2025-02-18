@@ -33,6 +33,7 @@ db = MyDb("result.sqlite")
 # id                  TEXT
 # );
 
+
 def generate_query(user_question: str) -> str:
     """"
         This funtion asks ollama to generate the SQL query
