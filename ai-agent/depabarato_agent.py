@@ -1,7 +1,6 @@
-import dataclasses
-import json
 import logging
-from llm_client import ask_agent, ask_agent_content_json
+
+from llm_client import ask_agent_content_json
 from mydb import db
 
 log = logging.getLogger(__name__)
@@ -26,6 +25,25 @@ def __is_safe_where_clause(where_clause: str) -> bool:
     return True
 
 
+def __get_n_cheapest_apartment(where_clause: str, size: int) -> list[dict]:
+    sql = f"""
+        WITH RankedApartments AS (
+            SELECT
+                *,
+                ROW_NUMBER() OVER (PARTITION BY name ORDER BY price_soles) AS rn
+            FROM
+                apartment
+            WHERE {where_clause}
+        )
+        SELECT *
+        FROM RankedApartments
+        WHERE rn = 1
+        ORDER BY price_soles
+        LIMIT {size};
+    """
+    log.debug(f"final query: {sql}")
+    return db.query(sql)
+
 def __execute_query(where_clause: str) -> tuple[bool, list[dict]]:
     """
     Execute the query in the database
@@ -38,9 +56,7 @@ def __execute_query(where_clause: str) -> tuple[bool, list[dict]]:
         return (True, None)
 
     final_where_clause = clean_llm_response(where_clause)
-    sql = f"select * from apartments where {final_where_clause} order by price_soles asc"
-    log.info(f"final query: {sql}")
-    data = db.query(sql)
+    data = __get_n_cheapest_apartment(final_where_clause, 3)
     if data is None:
         return (True, None)
 

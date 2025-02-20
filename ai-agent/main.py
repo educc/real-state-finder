@@ -1,5 +1,7 @@
 import logging
+from datetime import  datetime, timedelta
 from typing import Optional, List
+from urllib.parse import urlencode
 
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import PlainTextResponse
@@ -13,27 +15,81 @@ log = logging.getLogger(__name__)
 app = FastAPI()
 
 
+LAST_MSG_EXPIRATION_MINUTES = 15
+users_last_message: dict[str, datetime] = {}
+
+WELCOME_MESSAGE = "".join([
+    "Hola, soy David el asistente virtual de depabarato.com\n",
+    "Yo puedo ayudarte a buscar el departamento más barato en Lima según tus necesidades\n",
+    "\n",
+    "Ejemplos de consultas de nuestros usuarios:\n",
+    "- quiero un depa en san miguel\n",
+    "- un depa en lince con tres dormitorios\n",
+    "- busco depa en san isidro de al menos 100 m2\n",
+    "- en san martin con 3 cuartos\n",
+    "- mínimo 70 m2 y 3 cuartos\n",
+    "\n",
+    "Dime tu consulta en un solo mensaje y buscaré el departamento más barato para ti",
+])
+
+from datetime import datetime, timedelta
+
+def __is_first_message(phone: str) -> bool:
+    """
+    Returns True if there is no stored last message timestamp or if the last
+    message was sent more than the specified number of minutes ago.
+    """
+
+    global users_last_message
+    now = datetime.now()
+
+    last_msg_time = users_last_message.get(phone, datetime(2000, 1,1))
+    last_msg_plus_exp_time = last_msg_time + timedelta(minutes=LAST_MSG_EXPIRATION_MINUTES)
+
+    users_last_message[phone] = now
+    if last_msg_plus_exp_time < now:
+        return True
+    return False
+
+def __build_message_for_apartment(apartment: dict) -> str:
+    def __build_google_search_url(text):
+        base_url = "https://www.google.com/search?"
+        query_params = {'q': text}
+        url = base_url + urlencode(query_params)
+        return url
+
+    url = __build_google_search_url("proyecto " + apartment['name'] + " en Lima")
+
+    response = ""
+    response += f"{apartment['district']} - {apartment['name']}\n"
+    response += f"S/ {int(apartment['price_soles'])}   {int(apartment['area_m2'])} m2 \n"
+    response += f"{apartment['bedrooms']} 🛏️\n"
+    response += f"{url}️\n"
+    return response
+
 def find_apartments_user_reply(user_question: str) -> str:
     """
     Find the apartments that match the user question
     :param user_question:
     :return:
     """
-    has_error, apartments = find_apartments(user_question)
-    if has_error:
-        return "Lo siento, no pude encontrar apartamentos para ti."
+    try:
 
-    if len(apartments) == 0:
-        return "Lo siento, no pude encontrar apartamentos para ti."
+        has_error, apartments = find_apartments(user_question)
+        if has_error:
+            return "Lo siento, no pude encontrar departamentos para ti."
 
-    first = apartments[0]
-    response = "Aquí tienes los apartamentos que encontré para ti:\n"
-    response += f"Proyecto: {first['name']}\n"
-    response += f"Distrito: {first['district']}\n"
-    response += f"Precio: S/ {first['price_soles']}\n"
-    response += f"Dormitorios: {first['bedrooms']}\n"
-    response += f"Área: {first['area_m2']} m2\n"
-    return response
+        if len(apartments) == 0:
+            return "Lo siento, no pude encontrar departamentos para ti."
+
+        response = "Aquí tienes los departamentos que encontré para ti:\n\n"
+        for apartment in apartments:
+            response += __build_message_for_apartment(apartment) + "\n"
+        response += "Seguiré aquí para más consultas..."
+        return response
+    except Exception as ex:
+        log.error(f"At find_apartments_user_reply, error={ex}")
+        return "Oops, algo inesperado pasó, por favor escriba nuevamente su consulta"
 
 
 def get_messages_from_whatsapp(body: dict) -> Optional[List[dict]]:
@@ -89,11 +145,14 @@ async def handle_post(request: Request):
         logging.error("No messages found")
         return PlainTextResponse(content="", status_code=200)
 
-    log.info(f"messages: {messages}")
+    log.debug(f"messages: {messages}")
     to_phone = messages[0].get("from")
+
+    if __is_first_message(to_phone):
+        whastapp_client.send_text(WELCOME_MESSAGE, to_phone)
+        return
+
     user_question = messages[0].get("text", {}).get("body")
-
     user_reply = find_apartments_user_reply(user_question)
-
-    log.info(f"user_reply: {user_reply}")
+    log.debug(f"user_reply: {user_reply}")
     whastapp_client.send_text(user_reply, to_phone)
