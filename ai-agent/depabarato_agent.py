@@ -1,3 +1,4 @@
+import json
 import logging
 
 from llm_client import ask_agent_content_json
@@ -80,5 +81,10 @@ def find_apartments(user_question: str) -> tuple[bool, list[dict]]:
     """
     response = ask_agent_content_json(user_question)
     where_clause = response["where_clause"]
-    log.info(f"[user_question={user_question}], [where_clause={where_clause}]")
+
+    log_json = {
+        "user_question": user_question,
+        "where_clause": where_clause
+    }
+    log.info(json.dumps(log_json))
     return __execute_query(where_clause)

@@ -1,20 +1,26 @@
 import logging
 import sys
 
+from depabarato_agent import find_apartments
 from llm_client import ask_agent
 from mydb import db
 
 log = logging.getLogger(__name__)
 
-def generate_query(user_question: str) -> str:
+def log_apartment(user_question: str) -> str:
     """"
         This funtion asks ollama to generate the SQL query
     """
-    ai_response =  ask_agent(user_question)
-    sql_query = ai_response["message"]["content"]
-    log.info("query generated:")
-    log.info(sql_query)
-    return sql_query
+    has_error, rows =  find_apartments(user_question)
+    if has_error or rows is None:
+        log.error("Error finding apartments")
+        return
+
+    if len(rows) == 0:
+        log.info("No apartments found")
+
+    first = rows[0]
+    log.info(build_apartment_message(first))
 
 def build_apartment_message(row: dict) -> str:
     district = row["district"]
@@ -26,28 +32,16 @@ def build_apartment_message(row: dict) -> str:
 
     return f"{district} | {name} | S/ {price_soles} | {bedrooms} | {area} m2 | {delivery_date}"
 
-def get_user_answer(query: str) -> str:
-    rows = db.query(query)
-    if len(rows) == 0:
-        return "No encontramos departamentos para tu búsqueda."
-
-    answer = ""
-    for row in rows[0:3]:
-        answer = answer + "\n" + build_apartment_message(row)
-    return answer
 
 def main():
     while(True):
         print("Qué departamento buscas:")
         user_question = input()
-        #user_question = "lo mas barato en san miguel de dos dormitorios"
 
         if (user_question == ""):
             sys.exit(0)
 
-        sql_query = generate_query(user_question)
-        answer = get_user_answer(sql_query)
-        print(answer)
+        log_apartment(user_question)
     #
 
 if __name__ == '__main__':
