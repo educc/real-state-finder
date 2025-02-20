@@ -3,7 +3,16 @@ import logging
 from llm_client import ask_agent_content_json
 from mydb import db
 
+# Create a file handler to write logs to `questions.log`
+log_file = "questions.log"
+file_handler = logging.FileHandler(log_file)
+file_handler.setLevel(logging.INFO)
+file_formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+file_handler.setFormatter(file_formatter)
+
 log = logging.getLogger(__name__)
+log.addHandler(file_handler)
+
 
 
 def clean_llm_response(llm_response: str) -> str:
@@ -50,7 +59,6 @@ def __execute_query(where_clause: str) -> tuple[bool, list[dict]]:
     :param where_clause:
     :return: true if there is an error, false otherwise, and the data
     """
-    log.info(f"where_clause: {where_clause}")
     if __is_safe_where_clause(where_clause) is False:
         log.info(f"The where clause is not safe. where_clause={where_clause}")
         return (True, None)
@@ -72,4 +80,5 @@ def find_apartments(user_question: str) -> tuple[bool, list[dict]]:
     """
     response = ask_agent_content_json(user_question)
     where_clause = response["where_clause"]
+    log.info(f"[user_question={user_question}], [where_clause={where_clause}]")
     return __execute_query(where_clause)
