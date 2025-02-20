@@ -2,8 +2,6 @@ import logging
 import sys
 
 from depabarato_agent import find_apartments
-from llm_client import ask_agent
-from mydb import db
 
 log = logging.getLogger(__name__)
 

@@ -1,5 +1,5 @@
 import logging
-from datetime import  datetime, timedelta
+from datetime import datetime, timedelta
 from typing import Optional, List
 from urllib.parse import urlencode
 
@@ -24,15 +24,14 @@ WELCOME_MESSAGE = "".join([
     "\n",
     "Ejemplos de consultas de nuestros usuarios:\n",
     "- quiero un depa en san miguel\n",
-    "- un depa en lince con tres dormitorios\n",
-    "- busco depa en san isidro de al menos 100 m2\n",
-    "- en san martin con 3 cuartos\n",
+    "- un depa en Lince con tres dormitorios\n",
+    "- busco depa en San Isidro de al menos 100 m2\n",
+    "- en San Martin de Porras con 3 cuartos\n",
     "- mínimo 70 m2 y 3 cuartos\n",
     "\n",
     "Dime tu consulta en un solo mensaje y buscaré el departamento más barato para ti",
 ])
 
-from datetime import datetime, timedelta
 
 def __is_first_message(phone: str) -> bool:
     """
