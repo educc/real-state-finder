@@ -4,6 +4,8 @@ from dataclasses import asdict, fields
 from sqlite3 import Error
 from typing import get_type_hints
 
+from config import DATABASE_SQLITE_FILENAME
+
 log = logging.getLogger(__name__)
 
 
@@ -154,3 +156,5 @@ class MyDb:
         finally:
             conn.close()
     #
+
+db = MyDb(DATABASE_SQLITE_FILENAME)

@@ -1,38 +1,10 @@
 import logging
 import sys
 
-from agent import ask_agent
-from mydb import MyDb
+from llm_client import ask_agent
+from mydb import db
 
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 log = logging.getLogger(__name__)
-
-
-db = MyDb("result.sqlite")
-
-# create table main.apartments
-# (
-#     created_at          DATE,
-# name                TEXT,
-# address             TEXT,
-# district            TEXT,
-# construction_status TEXT,
-# delivery_date       TEXT,
-# price_soles         FLOAT,
-# bedrooms            BIGINT,
-# bathrooms           BIGINT,
-# area_m2             FLOAT,
-# common_area_count   BIGINT,
-# rent_price_soles    BIGINT,
-# investment_ratio    FLOAT,
-# url                 TEXT,
-# url_location        TEXT,
-# builder             TEXT,
-# bank                TEXT,
-# phones              TEXT,
-# id                  TEXT
-# );
-
 
 def generate_query(user_question: str) -> str:
     """"
