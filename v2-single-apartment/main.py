@@ -101,6 +101,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.only_report:
+        log.info("Only generating reports")
         generate_reports(args.output_dir, "result.sqlite")
         exit(0)
 
