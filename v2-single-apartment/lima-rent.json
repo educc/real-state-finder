@@ -285,6 +285,21 @@
     "rentPrice": 3400
   },
   {
+    "district": "Miraflores",
+    "bedrooms": 1,
+    "rentPrice": 2500
+  },
+  {
+    "district": "Miraflores",
+    "bedrooms": 2,
+    "rentPrice": 3150
+  },
+  {
+    "district": "Miraflores",
+    "bedrooms": 3,
+    "rentPrice": 4150
+  },
+  {
     "district": "Comas",
     "bedrooms": 1,
     "rentPrice": 850
