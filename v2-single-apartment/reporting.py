@@ -14,7 +14,7 @@ log = logging.getLogger(__name__)
 class VipItemForFree:
     group: str
     district: str
-    min_prices_soles: str
+    min_prices_soles: float
 
 
 @dataclass
@@ -241,10 +241,10 @@ def generate_reports(output_directory: str, database_filename: str) -> None:
     __write_json_vip_file(vip_list, filename)
 
     # [3] Generating FREE for newsletter
-    def take_first_prices_soles(vip_item: dict) -> str | None:
+    def take_first_prices_soles(vip_item: dict) -> float | None:
         if len(vip_item["list"]) == 0:
             return None
-        return str(vip_item["list"][0]["price_soles"])
+        return vip_item["list"][0]["price_soles"]
 
     top_data = FreeReport(items=top5, vip=[])
     for vip_item in vip_list[1:]:
