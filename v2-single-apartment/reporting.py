@@ -1,12 +1,26 @@
 import json
 import logging
 import os
+from dataclasses import dataclass
 from urllib.parse import urlencode
 
 from apartment_finder import Apartment
 from mydb import MyDb
 
 log = logging.getLogger(__name__)
+
+
+@dataclass
+class VipItemForFree:
+    group: str
+    district: str
+    min_prices_soles: str
+
+
+@dataclass
+class FreeReport:
+    items: list[Apartment]
+    vip: list[VipItemForFree]
 
 
 def __take_last_one(list_str: str) -> str:
@@ -77,15 +91,30 @@ def __write_json_vip_file(data: list[dict], filename_json: str):
         json.dump(new_data, my_file)
 
 
-def __write_json_file(data: list[Apartment], filename_json: str):
+def __write_json_top_file(data: list[Apartment], filename_json: str):
     log.info(f"Write JSON to file '{filename_json}'")
 
-    new_data = []
+    result = []
     for item in data:
-        new_data.append(__build_dict_from_apartment(item))
+        result.append(__build_dict_from_apartment(item))
 
     with open(filename_json, "w", encoding="utf-8") as my_file:
-        json.dump(new_data, my_file)
+        json.dump(result, my_file)
+
+
+def __write_json_free_file(data: FreeReport, filename_json: str):
+    log.info(f"Write JSON to file '{filename_json}'")
+
+    result = data.__dict__
+    clean_apartments = []
+    for item in data.items:
+        clean_apartments.append(__build_dict_from_apartment(item))
+
+    result["items"] = clean_apartments
+    result["vip"] = [it.__dict__ for it in data.vip]
+
+    with open(filename_json, "w", encoding="utf-8") as my_file:
+        json.dump(result, my_file)
 
 
 def __calculation_investment_ratio(it: Apartment) -> float:
@@ -156,11 +185,10 @@ def generate_reports(output_directory: str, database_filename: str) -> None:
 
     db = MyDb(database_filename)
 
-    # [1] Generating top 5 apartments (1 bedroom)
-
-    filename = os.path.join(output_directory, "top.json")
+    # [1] Generating top.json for depabarato.com
     top5 = __get_n_cheapest_apartment(5, db)
-    __write_json_file(top5, filename)
+    filename = os.path.join(output_directory, "top.json")
+    __write_json_top_file(top5, filename)
 
     # [2] Generating vip
 
@@ -211,3 +239,24 @@ def generate_reports(output_directory: str, database_filename: str) -> None:
 
     filename = os.path.join(output_directory, "vip.json")
     __write_json_vip_file(vip_list, filename)
+
+    # [3] Generating FREE for newsletter
+    def take_first_prices_soles(vip_item: dict) -> str | None:
+        if len(vip_item["list"]) == 0:
+            return None
+        return str(vip_item["list"][0]["price_soles"])
+
+    top_data = FreeReport(items=top5, vip=[])
+    for vip_item in vip_list[1:]:
+        min_price_soles = take_first_prices_soles(vip_item)
+        if min_price_soles is None:
+            continue
+        top_data.vip.append(VipItemForFree(
+            group=vip_item["group"],
+            district=vip_item["district"],
+            min_prices_soles=min_price_soles
+        ))
+
+    filename = os.path.join(output_directory, "free.json")
+    __write_json_free_file(top_data, filename)
+#

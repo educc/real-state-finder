@@ -35,3 +35,4 @@ logs/
 *.conf
 
 # Exclude any other directories or files that are not needed in the production environment
+*.json

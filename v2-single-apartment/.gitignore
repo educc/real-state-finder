@@ -7,5 +7,4 @@ nexo_web/
 __pycache__
 
 result.*
-top.json
-vip.json
+*.json
