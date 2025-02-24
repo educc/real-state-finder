@@ -2,7 +2,7 @@
   {
     "district": "Cercado de lima",
     "bedrooms": 1,
-    "rentPrice": 9999
+    "rentPrice": 1200
   },
   {
     "district": "Cercado de lima",
@@ -167,7 +167,7 @@
   {
     "district": "Carabayllo",
     "bedrooms": 1,
-    "rentPrice": 9999
+    "rentPrice": 500
   },
   {
     "district": "Carabayllo",
@@ -182,7 +182,7 @@
   {
     "district": "Puente Piedra",
     "bedrooms": 1,
-    "rentPrice": 9999
+    "rentPrice": 500
   },
   {
     "district": "Puente Piedra",
@@ -192,7 +192,7 @@
   {
     "district": "Puente Piedra",
     "bedrooms": 3,
-    "rentPrice": 9999
+    "rentPrice": 1200
   },
   {
     "district": "La Victoria",
@@ -242,7 +242,7 @@
   {
     "district": "Independencia",
     "bedrooms": 1,
-    "rentPrice": 9999
+    "rentPrice": 1100
   },
   {
     "district": "Independencia",
@@ -332,7 +332,7 @@
   {
     "district": "Lurin",
     "bedrooms": 1,
-    "rentPrice": 9999
+    "rentPrice": 1500
   },
   {
     "district": "Lurin",
@@ -347,7 +347,7 @@
   {
     "district": "Santa Anita",
     "bedrooms": 1,
-    "rentPrice": 9999
+    "rentPrice": 800
   },
   {
     "district": "Santa Anita",
@@ -387,7 +387,7 @@
   {
     "district": "San Luis",
     "bedrooms": 3,
-    "rentPrice": 9999
+    "rentPrice": 2000
   },
   {
     "district": "San Bartolo",
