@@ -95,7 +95,14 @@ if __name__ == "__main__":
     parser.add_argument("--test", action="store_true",
                         help="Only process one single record to finish quickly and check if everything works as expected",
                         default=False)
+    parser.add_argument("--only-report", action="store_true",
+                        help="Only generates the reports, no data is fetched",
+                        default=False)
     args = parser.parse_args()
+
+    if args.only_report:
+        generate_reports(args.output_dir, "result.sqlite")
+        exit(0)
 
     app_args = AppArgs(
         output_type=args.output,

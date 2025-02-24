@@ -23,6 +23,27 @@ def __build_google_search_url(text):
     return url
 
 
+def __human_date(date: str) -> str:
+    """"
+    Convert date to human format in Spanish
+    :param date: string date in format 'YYYY-MM-DD'
+    :return mar 2025, if the data is invalid returns the same input
+    """
+    try:
+        months = [
+            "ene", "feb", "mar", "abr", "may", "jun",
+            "jul", "ago", "sep", "oct", "nov", "dic"
+        ]
+        parts = date.split('-')
+        if len(parts) != 3:
+            return date
+        year = parts[0]
+        month = int(parts[1]) - 1
+        return f"{months[month]} {year}"
+    except (ValueError, IndexError, KeyError):
+        return date
+
+
 def __build_dict_from_apartment(item: Apartment) -> dict:
     url = __build_google_search_url("proyecto " + item.name + " en Lima")
 
@@ -32,7 +53,7 @@ def __build_dict_from_apartment(item: Apartment) -> dict:
         "district": item.district,
         "price_soles": item.price_soles,
         "area_m2": item.area_m2,
-        "delivery_date": item.delivery_date,
+        "delivery_date": __human_date(item.delivery_date),
         "address": item.address,
         "bedrooms": item.bedrooms,
         "rent_price_soles": item.rent_price_soles,
