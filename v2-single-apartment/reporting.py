@@ -105,24 +105,18 @@ def __get_n_cheapest_apartment(size: int, db: MyDb) -> list[Apartment]:
             SELECT
                 *,
                 ROW_NUMBER() OVER (PARTITION BY name ORDER BY price_soles) AS rn
-            FROM
-                apartment
-            WHERE
-                rent_price_soles > 0
-              $CREATED_CLAUSE
+            FROM  apartment
+            WHERE  rent_price_soles > 0 $CREATED_CLAUSE
         )
-        SELECT *
-        FROM RankedApartments
-        WHERE rn = 1
-        ORDER BY price_soles
-        LIMIT {size * 2};
+        SELECT * FROM RankedApartments
+        WHERE rn = 1  ORDER BY price_soles  LIMIT {size * 2};
     """
     if len(row) > 0:
         sql = sql.replace("$CREATED_CLAUSE", f" AND created_at = '{row[0]["latest"]}'")
     data_raw = db.query(sql)
     data = [Apartment.from_dict(it) for it in data_raw]
 
-    result = [it for it in data if __calculation_investment_ratio(it) <= 0.20]
+    result = [it for it in data if __calculation_investment_ratio(it) <= 0.40]
     return result[0:size]
 
 
@@ -135,18 +129,11 @@ def __get_n_cheapest_apartment_by_district(district: str, size: int, db: MyDb) -
             SELECT
                 *,
                 ROW_NUMBER() OVER (PARTITION BY name ORDER BY price_soles) AS rn
-            FROM
-                apartment
-            WHERE
-                rent_price_soles > 0
-                and district = '{district}'
-              $CREATED_CLAUSE
+            FROM  apartment
+            WHERE district = '{district}'  $CREATED_CLAUSE
         )
-        SELECT *
-        FROM RankedApartments
-        WHERE rn = 1
-        ORDER BY price_soles
-        LIMIT {size * 2};
+        SELECT *   FROM RankedApartments
+        WHERE rn = 1  ORDER BY price_soles   LIMIT {size * 2};
     """
     if len(row) > 0:
         sql = sql.replace("$CREATED_CLAUSE", f" AND created_at = '{row[0]["latest"]}'")
