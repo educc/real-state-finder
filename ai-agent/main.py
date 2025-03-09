@@ -124,6 +124,7 @@ async def handle_get(request: Request):
     Endpoint used to verify the webhook.
     WhatsApp sends 'hub.verify_token' and expects the same 'hub.challenge' back.
     """
+    log.info(f"GET request: {request.url}")
     hub_verify_token = request.query_params.get("hub.verify_token")
     hub_challenge = request.query_params.get("hub.challenge")
     if hub_verify_token == WHATSAPP_VERIFY_TOKEN:
@@ -138,6 +139,7 @@ async def handle_post(request: Request):
     Receives messages when someone sends a WhatsApp message.
     Processes text and image messages and dispatches them to the sales bot.
     """
+    log.info(f"POST request: {request.url}")
     body = await request.json()
     messages = get_messages_from_whatsapp(body)
     if not messages:
@@ -146,6 +148,7 @@ async def handle_post(request: Request):
 
     log.debug(f"messages: {messages}")
     to_phone = messages[0].get("from")
+    log.info(f"message={messages[0]}, from={to_phone}")
 
     if __is_first_message(to_phone):
         whastapp_client.send_text(WELCOME_MESSAGE, to_phone)
