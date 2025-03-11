@@ -1,0 +1,24 @@
+user: busco departamento en lince
+answer: district = 'Lince'
+user: depa de un dormitorio
+answer: bedrooms = 1
+user: lo mas barato en san isidro
+answer: district = 'San Isidro'
+user: quiero departamento de 3 dormitorios en surco
+answer: bedrooms = 3 and district = 'Santiago de Surco'
+user: un depa en construccion en jesus maria
+answer: construction_status = 'construcción' AND district = 'Jesus Maria
+user: en san miguel de minimo 40 m2
+answer: area_m2 >= 40 and district = 'San Miguel'
+user: busco depa en miraflores de dos dormitorios como maximo 500000 soles
+answer: price_soles <= 500000 AND district = 'Miraflores' AND bedrooms >= 2`
+user: quiero comprar en Chorrillos de 3 cuartos de al menos 100 metros
+answer: district = 'Chorrillos' AND bedrooms >= 3 AND area_m2 >= 100
+user: quiero un depa que se alquiler como minimo en 2000 soles
+answer: rent_price_soles >= 2000
+user: un depa en magdalena que se entregue este año
+answer: district = 'Magdalena del Mar' and delivery_date LIKE '2025%'
+user: depa en planos de 3 dormitorios en san isidro para el 2026
+answer: construction_status = 'Planos' and bedrooms = 3 and district = 'San Isidro' and delivery_date LIKE '2026%'
+user: $USER_QUESTION
+answer: ?
