@@ -1,8 +1,5 @@
-const server = Bun.serve({
-    port: 3000,
-    fetch(req) {
-        return new Response("Bun!");
-    },
-});
+import {findApartments} from "./depabarato_agent.ts";
 
-console.log(`Listening on http://localhost:${server.port} ...`);
+const answer = await findApartments("quiero un depa en san isidro")
+
+console.log(answer)

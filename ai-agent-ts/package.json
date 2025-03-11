@@ -3,6 +3,9 @@
   "module": "index.ts",
   "type": "module",
   "private": true,
+  "dependencies": {
+    "ollama": "^0.5.14"
+  },
   "devDependencies": {
     "@types/bun": "latest"
   },
