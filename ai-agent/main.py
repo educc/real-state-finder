@@ -158,3 +158,20 @@ async def handle_post(request: Request):
     user_reply = find_apartments_user_reply(user_question)
     log.debug(f"user_reply: {user_reply}")
     whastapp_client.send_text(user_reply, to_phone)
+
+
+@app.post("/api/depabarato", response_class=PlainTextResponse)
+async def handle_post(request: Request):
+    """
+    The question coming from the body payload.
+    """
+    log.info(f"POST request: {request.url}")
+    body = await request.json()
+    user_question = body.get("question")
+    if not user_question:
+        log.error("No user question found in the request")
+        return PlainTextResponse(content="No user question found in the request", status_code=400)
+
+    user_reply = find_apartments_user_reply(user_question)
+    log.debug(f"user_reply: {user_reply}")
+    return PlainTextResponse(content=user_reply, status_code=200)

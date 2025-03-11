@@ -20,3 +20,26 @@ export interface Apartment {
     id: string;
     created_at: string;
 }
+
+// types.ts
+export interface WhatsAppMessage {
+    type: string;
+    from: string;
+    text?: {
+        body: string;
+    };
+}
+
+export interface WhatsAppChange {
+    value: {
+        messages: WhatsAppMessage[];
+    };
+}
+
+export interface WhatsAppEntry {
+    changes: WhatsAppChange[];
+}
+
+export interface WhatsAppWebhook {
+    entry: WhatsAppEntry[];
+}
