@@ -78,7 +78,7 @@ def find_apartments_user_reply(user_question: str) -> str:
         if has_error:
             return "Lo siento, no pude encontrar departamentos para ti."
 
-        if len(apartments) == 0:
+        if apartments is None or len(apartments) == 0:
             return "Lo siento, no pude encontrar departamentos para ti."
 
         response = "Aquí tienes los departamentos que encontré para ti:\n\n"
